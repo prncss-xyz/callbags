@@ -1,39 +1,92 @@
-/* eslint-disable no-console */
 import { flow } from '@constellar/core'
-import { expect } from 'vitest'
-import { test } from 'vitest'
-import { describe } from 'vitest'
+import { mul } from '@prncss-xyz/utils'
+import { describe, expect, expectTypeOf, test } from 'vitest'
 
-import { collect, collectAsync, interval, iterable, take, tap } from '.'
+import { scan, valueFold } from './folds'
+import { map, take } from './operators'
+import { collect, collectAsync } from './sinks'
+import { interval, iterable } from './sources'
 
-function log(message: string) {
-	return function (...args: unknown[]) {
-		console.log(message, ...args)
-	}
-}
+describe('collect', () => {
+	test('collect last number', () => {
+		const res = flow(
+			iterable<number>(),
+			scan(valueFold()),
+			collect,
+		)([1, 2, 3, 4])
+		expect(res).toEqual(4)
+		expectTypeOf(res).toEqualTypeOf<number | undefined>()
+	})
+})
 
-describe.skip('collect', () => {
+describe('map', () => {
+	test('changes type', () => {
+		const res = flow(
+			iterable<number>(),
+			map(mul(2)),
+			map(String),
+			map((x, i) => x + i),
+			scan(valueFold()),
+			collect,
+		)([1, 2, 3, 4])
+		expect(res).toEqual('83')
+		expectTypeOf(res).toEqualTypeOf<string | undefined>()
+	})
+})
+
+describe.skip('take', () => {
 	test('undefined', () => {
-		const res = collect(take(0)(iterable<number>()))([1, 2, 3, 4])
+		const res = flow(
+			iterable<number>(),
+			take(0),
+			scan(valueFold()),
+			collect,
+		)([1, 2, 3, 4])
 		expect(res).toEqual(undefined)
 	})
 	test('defined', () => {
-		const res = collect(take(2)(iterable<number>()))([1, 2, 3, 4])
-		expect(res).toEqual(2)
+		const res = flow(
+			iterable<number>(),
+			take(2),
+			scan(valueFold()),
+			collect,
+		)([1, 2, 3, 4])
+		expect(res).toBe(2)
+	})
+	test.skip('idempotency', () => {
+		const res = flow(iterable<number>(), take(2), scan(valueFold()), collect)
+		expect(res([1, 2, 3, 4])).toEqual(2)
+		expect(res([1, 2, 3, 4])).toEqual(2)
 	})
 })
 
 describe('collectAsync', () => {
 	test('undefined', async () => {
-		const res = await collectAsync(take(0)(iterable<number>()))([1, 2, 3, 4])
+		const res = await flow(
+			iterable<number>(),
+			take(0),
+			scan(valueFold()),
+			collectAsync,
+		)([1, 2, 3, 4])
+		expectTypeOf(res).toEqualTypeOf<number | undefined>()
 		expect(res).toEqual(undefined)
 	})
 	test('defined', async () => {
-		const res = await collectAsync(take(2)(iterable<number>()))([1, 2, 3, 4])
+		const res = await flow(
+			iterable<number>(),
+			take(2),
+			scan(valueFold()),
+			collectAsync,
+		)([1, 2, 3, 4])
 		expect(res).toEqual(2)
 	})
 	test('interval', async () => {
-		const res = await collectAsync(flow(interval(1), take(4)))()
+		const res = await flow(
+			interval(1),
+			take(4),
+			scan(valueFold()),
+			collectAsync,
+		)()
 		expect(res).toEqual(3)
 	})
 })
