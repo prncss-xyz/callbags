@@ -34,7 +34,7 @@ describe('map', () => {
 	})
 })
 
-describe.skip('take', () => {
+describe('take', () => {
 	test('undefined', () => {
 		const res = flow(
 			iterable<number>(),
@@ -53,7 +53,7 @@ describe.skip('take', () => {
 		)([1, 2, 3, 4])
 		expect(res).toBe(2)
 	})
-	test.skip('idempotency', () => {
+	test('idempotency', () => {
 		const res = flow(iterable<number>(), take(2), scan(valueFold()), collect)
 		expect(res([1, 2, 3, 4])).toEqual(2)
 		expect(res([1, 2, 3, 4])).toEqual(2)

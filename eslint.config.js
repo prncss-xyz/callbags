@@ -36,6 +36,7 @@ export default tseslint.config({
 						'elems',
 						'Lamarche',
 						'prncss',
+						'pullable',
 						'rambda',
 						'removables',
 						'tseslint',

@@ -7,7 +7,7 @@ export type Source<Init, Value, Index, Err, R> = (args: {
 	push(value: Value, index: Index): void
 }) => (init: Init) => {
 	mount(): () => void
-	pull(): void
+	pull?: () => void
 	result(): R
 }
 
@@ -25,7 +25,6 @@ export function empty<Init, Value, Index, Err>(): Source<
 				mount() {
 					return noop
 				},
-				pull: noop,
 				result: noop,
 			}
 		}
@@ -62,6 +61,37 @@ export function iterable<Value>(): Source<
 	}
 }
 
+export function iterableAsync<Value>(): Source<
+	Iterable<Value>,
+	Value,
+	number,
+	never,
+	void
+> {
+	return function ({ close, pass, push }) {
+		return function (init) {
+			let index = 0
+			const iterator = init[Symbol.asyncIterator]()
+			return {
+				mount() {
+					return noop
+				},
+				pull() {
+					iterator.next().then((next) => {
+						if (next.done) {
+							close()
+							return
+						}
+						push(next.value, index++)
+						pass()
+					})
+				},
+				result: noop,
+			}
+		}
+	}
+}
+
 export function interval(
 	period: number,
 ): Source<void, number, number, never, void> {
@@ -78,7 +108,6 @@ export function interval(
 						clearInterval(handler)
 					}
 				},
-				pull: noop,
 				result: noop,
 			}
 		}
