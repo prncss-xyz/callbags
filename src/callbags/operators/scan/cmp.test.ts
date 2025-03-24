@@ -1,8 +1,8 @@
 import { flow, shallowEqual } from '@constellar/core'
 import { describe, expect, test } from 'vitest'
 
-import { collect } from '../sinks'
-import { iterable } from '../sources'
+import { collect } from '../../sinks'
+import { iterable } from '../../sources'
 import { maxFold, minFold, shuffleFold, sortFold } from './cmp'
 import { scan } from './core'
 

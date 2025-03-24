@@ -1,29 +1,43 @@
 import { noop } from '@constellar/core'
+import { fromInit, Init } from '@prncss-xyz/utils'
 
-export type Source<Init, Value, Index, Err, R> = (args: {
-	close(): void
-	error(err: Err): void
-	pass(): void
-	push(value: Value, index: Index): void
-}) => (init: Init) => {
-	mount(): () => void
-	pull?: () => void
-	result(): R
-}
+import { Source } from './core'
 
-export function empty<Init, Value, Index, Err>(): Source<
-	Init,
-	Value,
-	Index,
-	Err,
-	void
-> {
-	return function ({ close }) {
-		return function () {
-			close()
+export function once<Value>(): Source<Init<Value>, Value, void, never, void> {
+	return function ({ close, push }) {
+		return function (init) {
 			return {
 				mount() {
 					return noop
+				},
+				pull() {
+					push(fromInit(init))
+					close()
+				},
+				result: noop,
+			}
+		}
+	}
+}
+
+export function onceAsync<Value>(): Source<
+	Init<Promise<Value>>,
+	Value,
+	void,
+	never,
+	void
+> {
+	return function ({ close, push }) {
+		return function (init) {
+			return {
+				mount() {
+					return noop
+				},
+				pull() {
+					fromInit(init).then((value) => {
+						push(value)
+						close()
+					})
 				},
 				result: noop,
 			}
@@ -85,28 +99,6 @@ export function iterableAsync<Value>(): Source<
 						push(next.value, index++)
 						pass()
 					})
-				},
-				result: noop,
-			}
-		}
-	}
-}
-
-export function interval(
-	period: number,
-): Source<void, number, number, never, void> {
-	return function ({ push }) {
-		return function () {
-			let count = 0
-			return {
-				mount() {
-					let handler = setInterval(() => {
-						push(count, count)
-						count++
-					}, period)
-					return function () {
-						clearInterval(handler)
-					}
 				},
 				result: noop,
 			}

@@ -1,9 +1,9 @@
 import { flow } from '@constellar/core'
 import { describe, expect, expectTypeOf, test, vi } from 'vitest'
 
-import { tap } from './operators'
-import { collect } from './sinks'
-import { iterable } from './sources'
+import { tap } from '.'
+import { collect } from '../sinks'
+import { iterable } from '../sources'
 
 describe('tap', () => {
 	test('', () => {

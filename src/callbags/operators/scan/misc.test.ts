@@ -1,8 +1,8 @@
 import { flow } from '@constellar/core'
 import { describe, expect, test } from 'vitest'
 
-import { collect } from '../sinks'
-import { iterable } from '../sources'
+import { collect } from '../../sinks'
+import { iterable } from '../../sources'
 import { scan } from './core'
 import { joinFold, joinLastFold, objFold, productFold, sumFold } from './misc'
 

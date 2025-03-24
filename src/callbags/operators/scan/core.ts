@@ -1,7 +1,7 @@
 import { id } from '@constellar/core'
 import { fromInit, Init } from '@prncss-xyz/utils'
 
-import { Source } from '../sources'
+import { Source } from '../../sources'
 
 export interface Fold<Value, Acc, Index, R = Acc> {
 	fold: (value: Value, acc: Acc, index: Index, close: () => void) => Acc

@@ -2,9 +2,9 @@ import { flow } from '@constellar/core'
 import { timed } from '@prncss-xyz/utils'
 import { describe, expect, test } from 'vitest'
 
-import { mapAsync } from './operators'
-import { iterate, iterateAsync } from './sinks'
-import { iterable } from './sources'
+import { mapAsync } from '../operators'
+import { iterable } from '../sources'
+import { iterate, iterateAsync } from './iterate'
 
 describe('iterate', () => {
 	test('collect last number', () => {
@@ -17,16 +17,16 @@ describe('iterateAsync', () => {
 	test('collect last number', async () => {
 		const it = flow(
 			iterable<number>(),
-			mapAsync(async (x) => {
-				await timed(20)
-				return x
+			mapAsync(async (v) => {
+				await timed(v * 10)
+				return v
 			}),
 			iterateAsync,
-		)([1, 2, 3])
+		)([9, 2, 0])
 		const xs: number[] = []
 		for await (const x of it) {
 			xs.push(x)
 		}
-		expect(xs).toEqual([1, 2, 3])
+		expect(xs).toEqual([9, 2, 0])
 	})
 })
