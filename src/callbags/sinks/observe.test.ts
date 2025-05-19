@@ -1,5 +1,4 @@
 import { flow } from '@constellar/core'
-import { describe, expect, expectTypeOf, test } from 'vitest'
 
 import { take } from '../operators'
 import { scan, valueFold } from '../operators/scan'
@@ -8,11 +7,7 @@ import { collect, collectAsync } from './observe'
 
 describe('collect', () => {
 	test('collect last number', () => {
-		const res = flow(
-			iterable<number>(),
-			scan(valueFold()),
-			collect,
-		)([1, 2, 3, 4])
+		const res = flow(iterable([1, 2, 3, 4]), scan(valueFold()), collect)
 		expect(res).toEqual(4)
 		expectTypeOf(res).toEqualTypeOf<number | undefined>()
 	})
@@ -21,21 +16,22 @@ describe('collect', () => {
 describe('collectAsync', () => {
 	test('undefined', async () => {
 		const res = await flow(
-			iterable<number>(),
+			[1, 2, 3, 4],
+			iterable,
 			take(0),
 			scan(valueFold()),
 			collectAsync,
-		)([1, 2, 3, 4])
+		)
 		expectTypeOf(res).toEqualTypeOf<number | undefined>()
 		expect(res).toEqual(undefined)
 	})
 	test('defined', async () => {
 		const res = await flow(
-			iterable<number>(),
+			iterable([1, 2, 3, 4]),
 			take(2),
 			scan(valueFold()),
 			collectAsync,
-		)([1, 2, 3, 4])
+		)
 		expect(res).toEqual(2)
 	})
 	test('interval', async () => {
@@ -44,7 +40,7 @@ describe('collectAsync', () => {
 			take(4),
 			scan(valueFold()),
 			collectAsync,
-		)()
+		)
 		expect(res).toEqual(3)
 	})
 })

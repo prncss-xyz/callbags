@@ -1,6 +1,4 @@
-import { describe, expect, test } from 'vitest'
-
-import { sortedAdd } from './internal'
+import { sortedAdd } from './_internals'
 
 describe('sortedAdd', () => {
 	const add = sortedAdd<number>((a, b) => a - b)

@@ -1,16 +1,30 @@
 import { insert } from '@constellar/core'
 
+import { cmp0, sortedAdd } from './_internals'
 import { Fold } from './core'
-import { cmp0, sortedAdd } from './internal'
 
-export function maxFold<T, I>(cmp = cmp0<T>): Fold<T, T | undefined, I> {
+export function maxFold(): Fold<number, number, number> {
+	return {
+		fold: (t, acc) => (t > acc ? t : acc),
+		init: -Infinity,
+	}
+}
+
+export function minFold(): Fold<number, number, number> {
+	return {
+		fold: (t, acc) => (t < acc ? t : acc),
+		init: Infinity,
+	}
+}
+
+export function maxWithFold<T, I>(cmp = cmp0<T>): Fold<T, T | undefined, I> {
 	return {
 		fold: (t, acc) => (acc === undefined || cmp(t, acc) > 0 ? t : acc),
 		init: undefined,
 	}
 }
 
-export function minFold<T, I>(cmp = cmp0<T>): Fold<T, T | undefined, I> {
+export function minWithFold<T, I>(cmp = cmp0<T>): Fold<T, T | undefined, I> {
 	return {
 		fold: (t, acc) => (acc === undefined || cmp(t, acc) < 0 ? t : acc),
 		init: undefined,
@@ -20,7 +34,7 @@ export function minFold<T, I>(cmp = cmp0<T>): Fold<T, T | undefined, I> {
 export function sortFold<T, I>(cmp = cmp0<T>): Fold<T, T[], I> {
 	return {
 		fold: sortedAdd(cmp),
-		init: () => [] as T[],
+		init: () => [],
 	}
 }
 
@@ -30,6 +44,6 @@ export function shuffleFold<T, I>(): Fold<T, T[], I> {
 			const i = Math.floor(Math.random() * (acc.length + 1))
 			return insert(i, t, acc)
 		},
-		init: () => [] as any,
+		init: () => [],
 	}
 }

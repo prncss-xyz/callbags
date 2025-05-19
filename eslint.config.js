@@ -1,6 +1,7 @@
 import cspellPlugin from '@cspell/eslint-plugin'
 import js from '@eslint/js'
 import perfectionist from 'eslint-plugin-perfectionist'
+import tsdoc from 'eslint-plugin-tsdoc'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
@@ -17,6 +18,7 @@ export default tseslint.config({
 	plugins: {
 		'@cspell': cspellPlugin,
 		perfectionist,
+		tsdoc,
 	},
 	rules: {
 		'@cspell/spellchecker': [
@@ -77,5 +79,6 @@ export default tseslint.config({
 		'perfectionist/sort-union-types': perf,
 		'perfectionist/sort-variable-declarations': perf,
 		'prefer-const': 'off',
+		'tsdoc/syntax': 'error',
 	},
 })

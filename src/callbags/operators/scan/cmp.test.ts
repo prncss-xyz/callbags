@@ -1,5 +1,4 @@
 import { flow, shallowEqual } from '@constellar/core'
-import { describe, expect, test } from 'vitest'
 
 import { collect } from '../../sinks'
 import { iterable } from '../../sources'
@@ -8,33 +7,29 @@ import { scan } from './core'
 
 describe('maxFold', () => {
 	test('empty', () => {
-		const res = flow(iterable<number>(), scan(maxFold()), collect)([])
-		expect(res).toEqual(undefined)
+		const res = flow([], iterable, scan(maxFold()), collect)
+		expect(res).toEqual(-Infinity)
 	})
 	test('defined', () => {
-		const res = flow(iterable<number>(), scan(maxFold()), collect)([0, 2, 1])
+		const res = flow([0, 2, 1], iterable, scan(maxFold()), collect)
 		expect(res).toEqual(2)
 	})
 })
 
 describe('minFold', () => {
 	test('empty', () => {
-		const res = flow(iterable<number>(), scan(minFold()), collect)([])
-		expect(res).toEqual(undefined)
+		const res = flow([], iterable, scan(minFold()), collect)
+		expect(res).toEqual(+Infinity)
 	})
 	test('defined', () => {
-		const res = flow(iterable<number>(), scan(minFold()), collect)([1, 0, 2])
+		const res = flow([1, 0, 2], iterable, scan(minFold()), collect)
 		expect(res).toEqual(0)
 	})
 })
 
 describe('sortFold', () => {
 	test('', () => {
-		const res = flow(
-			iterable<number>(),
-			scan(sortFold()),
-			collect,
-		)([0, 2, 2, 1])
+		const res = flow([0, 2, 2, 1], iterable, scan(sortFold()), collect)
 		expect(res).toEqual([0, 1, 2])
 	})
 })
@@ -43,7 +38,7 @@ describe('shuffleFold', () => {
 	test('', () => {
 		let res: number[]
 		do {
-			res = flow(iterable<number>(), scan(shuffleFold()), collect)([0, 1, 2, 3])
+			res = flow([0, 1, 2, 3], iterable, scan(shuffleFold()), collect)
 		} while (shallowEqual(res, [0, 1, 2, 3]))
 		expect(res).not.equal([0, 1, 2, 3])
 		res.sort()

@@ -1,0 +1,6 @@
+{
+  "outDir": "./docs",
+  "sidebar": "./docs",
+  "jsdoc": "./jsdoc.json",
+  "bulma": false
+}

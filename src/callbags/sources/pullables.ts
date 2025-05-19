@@ -3,105 +3,59 @@ import { fromInit, Init } from '@prncss-xyz/utils'
 
 import { Source } from './core'
 
-export function once<Value>(): Source<Init<Value>, Value, void, never, void> {
+/**
+ * @param init - a value or a function returning this value
+ * @returns a source emitting the value once
+ */
+export function once<Value>(
+	init: Init<Value>,
+): Source<Value, void, never, void> {
 	return function ({ close, push }) {
-		return function (init) {
-			return {
-				mount() {
-					return noop
-				},
-				pull() {
-					push(fromInit(init))
+		return {
+			pull() {
+				push(fromInit(init))
+				close()
+				return
+			},
+			result: noop,
+			unmount: noop,
+		}
+	}
+}
+
+export function onceAsync<Value>(
+	init: Init<Promise<Value>>,
+): Source<Value, void, never, void> {
+	return function ({ close, push }) {
+		fromInit(init).then((value) => {
+			push(value)
+			close()
+			return
+		})
+		return {
+			result: noop,
+			unmount: noop,
+		}
+	}
+}
+
+export function iterable<Value>(
+	init: Iterable<Value>,
+): Source<Value, number, never, void> {
+	return function ({ close, push }) {
+		let index = 0
+		const iterator = init[Symbol.iterator]()
+		return {
+			pull() {
+				const next = iterator.next()
+				if (next.done) {
 					close()
-				},
-				result: noop,
-			}
-		}
-	}
-}
-
-export function onceAsync<Value>(): Source<
-	Init<Promise<Value>>,
-	Value,
-	void,
-	never,
-	void
-> {
-	return function ({ close, push }) {
-		return function (init) {
-			return {
-				mount() {
-					return noop
-				},
-				pull() {
-					fromInit(init).then((value) => {
-						push(value)
-						close()
-					})
-				},
-				result: noop,
-			}
-		}
-	}
-}
-
-export function iterable<Value>(): Source<
-	Iterable<Value>,
-	Value,
-	number,
-	never,
-	void
-> {
-	return function ({ close, pass, push }) {
-		return function (init) {
-			let index = 0
-			const iterator = init[Symbol.iterator]()
-			return {
-				mount() {
-					return noop
-				},
-				pull() {
-					const next = iterator.next()
-					if (next.done) {
-						close()
-						return
-					}
-					push(next.value, index++)
-					pass()
-				},
-				result: noop,
-			}
-		}
-	}
-}
-
-export function iterableAsync<Value>(): Source<
-	Iterable<Value>,
-	Value,
-	number,
-	never,
-	void
-> {
-	return function ({ close, pass, push }) {
-		return function (init) {
-			let index = 0
-			const iterator = init[Symbol.asyncIterator]()
-			return {
-				mount() {
-					return noop
-				},
-				pull() {
-					iterator.next().then((next) => {
-						if (next.done) {
-							close()
-							return
-						}
-						push(next.value, index++)
-						pass()
-					})
-				},
-				result: noop,
-			}
+					return
+				}
+				push(next.value, index++)
+			},
+			result: noop,
+			unmount: noop,
 		}
 	}
 }

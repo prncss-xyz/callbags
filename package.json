@@ -2,9 +2,12 @@
   "name": "t2",
   "version": "0.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "vitest"
+    "test:unit": "vitest",
+    "test:types": "tsc --noEmit",
+    "test:coverage": "vitest --coverage",
+    "docs": "cd src; jsdoc-to-mdx -c ../jsdoc-to-mdx.json"
   },
   "keywords": [],
   "author": "Juliette Lamarche <juliette.lamarche.xyz@gmail.com> (https://github.com/prncss-xyz/)",
@@ -14,15 +17,22 @@
   "devDependencies": {
     "@cspell/eslint-plugin": "^8.17.5",
     "@eslint/js": "^9.22.0",
+    "@vitest/coverage-v8": "3.0.8",
     "eslint": "^9.22.0",
     "eslint-plugin-perfectionist": "^4.10.1",
+    "eslint-plugin-tsdoc": "^0.4.0",
     "globals": "^16.0.0",
+    "jsdoc-to-mdx": "^1.2.1",
     "prettier": "^3.5.3",
+    "typedoc": "^0.28.2",
+    "typedoc-plugin-markdown": "^4.6.2",
+    "typescript": "^5.8.2",
     "typescript-eslint": "^8.26.1",
+    "vite-plugin-doctest": "^1.1.1",
     "vitest": "^3.0.8"
   },
   "dependencies": {
-    "@prncss-xyz/utils": "^0.29.2",
-    "@constellar/core": "^2.4.2"
+    "@constellar/core": "^2.4.2",
+    "@prncss-xyz/utils": "^0.29.2"
   }
 }

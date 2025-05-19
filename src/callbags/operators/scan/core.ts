@@ -3,40 +3,69 @@ import { fromInit, Init } from '@prncss-xyz/utils'
 
 import { Source } from '../../sources'
 
-export interface Fold<Value, Acc, Index, R = Acc> {
+export interface Fold<Value, Acc, Index> {
 	fold: (value: Value, acc: Acc, index: Index, close: () => void) => Acc
 	init: Init<Acc>
-	result?: (acc: Acc) => R
 }
 
-export function scan<Value, Index, Acc, R = Acc>({
+export function scan1<Value, Index>(fold: (acc: Value, value: Value) => Value) {
+	return function <Err, R>(
+		source: Source<Value, Index, Err, R>,
+	): Source<Value, Index, Err, Value> {
+		return function (args) {
+			let closed = false
+			function close() {
+				closed = true
+			}
+			let first = true
+			let acc: Value
+			return {
+				...source({
+					...args,
+					push(value, index) {
+						if (first) {
+							acc = value
+							first = false
+						} else {
+							acc = fold(acc, value)
+						}
+						args.push(acc, index)
+						if (closed) close()
+					},
+				}),
+				result() {
+					return acc
+				},
+			}
+		}
+	}
+}
+
+export function scan<Value, Index, Acc>({
 	fold,
 	init,
-	result = id<any>,
-}: Fold<Value, Acc, Index, R>) {
-	return function <Init, Err, R2>(
-		source: Source<Init, Value, Index, Err, R2>,
-	): Source<Init, Acc, Index, Err, R> {
+}: Fold<Value, Acc, Index>) {
+	return function <Err, R>(
+		source: Source<Value, Index, Err, R>,
+	): Source<Acc, Index, Err, Acc> {
 		return function (args) {
-			return function (init_) {
-				let closed = false
-				function close() {
-					closed = true
-				}
-				let acc = fromInit(init)
-				return {
-					...source({
-						...args,
-						push(value, index) {
-							acc = fold(value, acc, index, close)
-							args.push(acc, index)
-							if (closed) close()
-						},
-					})(init_),
-					result() {
-						return result(acc)
+			let closed = false
+			function close() {
+				closed = true
+			}
+			let acc = fromInit(init)
+			return {
+				...source({
+					...args,
+					push(value, index) {
+						acc = fold(value, acc, index, close)
+						args.push(acc, index)
+						if (closed) close()
 					},
-				}
+				}),
+				result() {
+					return acc
+				},
 			}
 		}
 	}
@@ -45,8 +74,7 @@ export function scan<Value, Index, Acc, R = Acc>({
 export function valueFold<Value, Index>(): Fold<
 	Value,
 	undefined | Value,
-	Index,
-	undefined | Value
+	Index
 > {
 	return {
 		fold: id,

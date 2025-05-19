@@ -3,62 +3,93 @@ import { noop } from '@constellar/core'
 import { Source } from './core'
 
 export function observable<Value, Index = void, Err = void>(): Source<
-	void,
 	Value,
 	Index,
 	Err,
 	void
 > {
 	return function () {
-		return function () {
-			return {
-				mount() {
-					return noop
-				},
-				result: noop,
-			}
+		return {
+			result: noop,
+			unmount: noop,
 		}
 	}
 }
 
-export function interval(
-	period: number,
-): Source<void, number, number, never, void> {
+export function interval(period: number): Source<number, number, never, void> {
 	return function ({ push }) {
-		return function () {
-			let count = 0
-			return {
-				mount() {
-					let handler = setInterval(() => {
-						push(count, count)
-						count++
-					}, period)
-					return function () {
-						clearInterval(handler)
-					}
-				},
-				result: noop,
-			}
+		let index = 0
+		let handler = setInterval(() => {
+			push(index, index)
+			index++
+		}, period)
+		return {
+			result: noop,
+			unmount() {
+				clearInterval(handler)
+			},
 		}
 	}
 }
 
-export function empty<Init, Value, Index, Err>(): Source<
-	Init,
-	Value,
-	Index,
-	Err,
-	void
-> {
-	return function ({ close }) {
-		return function () {
-			close()
-			return {
-				mount() {
-					return noop
-				},
-				result: noop,
+export function pushIterable2<Value>(
+	values: Iterable<Value>,
+): Source<Value, number, never, void> {
+	return function ({ close, push }) {
+		let index = 0
+		for (const value of values) {
+			push(value, index++)
+		}
+		close()
+		return {
+			result: noop,
+			unmount: noop,
+		}
+	}
+}
+
+export function pushIterable<Value>(
+	p: Promise<Iterable<Value>>,
+): Source<Value, number, never, void> {
+	return function ({ close, push }) {
+		let index = 0
+		p.then((values) => {
+			for (const value of values) {
+				push(value, index++)
 			}
+			close()
+		})
+		return {
+			result: noop,
+			unmount: noop,
+		}
+	}
+}
+
+export function pushIterableAsync<Value>(
+	values: AsyncIterable<Value>,
+): Source<Value, number, never, void> {
+	return function ({ close, push }) {
+		let index = 0
+		;(async () => {
+			for await (const value of values) {
+				push(value, index++)
+			}
+			close()
+		})()
+		return {
+			result: noop,
+			unmount: noop,
+		}
+	}
+}
+
+export function empty<Value, Index, Err>(): Source<Value, Index, Err, void> {
+	return function ({ close }) {
+		close()
+		return {
+			result: noop,
+			unmount: noop,
 		}
 	}
 }

@@ -1,0 +1,58 @@
+import { noop } from '@constellar/core'
+
+import { Source } from '../sources'
+
+function merger<A, B, C, I>(
+	f: (a: A, b: B, i: I) => C,
+	pushC: (c: C, i: I) => void,
+) {
+	const as: A[] = []
+	const is: I[] = []
+	const bs: B[] = []
+	return {
+		pushA(a: A, i: I) {
+			if (bs.length) {
+				const b = bs.pop()!
+				pushC(f(a, b, i), i)
+				return
+			}
+			as.push(a)
+			is.push(i)
+		},
+		pushB(b: B) {
+			if (as.length) {
+				const a = as.pop()!
+				const i = is.pop()!
+				pushC(f(a, b, i), i)
+				return
+			}
+			bs.push(b)
+		},
+	}
+}
+
+export function zip<VB, IB, EB, RB, C, VA>(
+	sb: Source<VB, IB, EB, RB>,
+	f: (a: VA, b: VB) => C,
+) {
+	return function <IA, EA, RA>(
+		sa: Source<VA, IA, EA, RA>,
+	): Source<C, IA, EA | EB, void> {
+		return function ({ close, error, push }) {
+			const { pushA, pushB } = merger(f, push)
+			const ofS1 = sa({ close, error, push: pushA })
+			const ofS2 = sb({ close, error, push: pushB })
+			return {
+				pull() {
+					ofS1.pull?.()
+					ofS2.pull?.()
+				},
+				result: noop,
+				unmount() {
+					ofS1.unmount()
+					ofS2.unmount()
+				},
+			}
+		}
+	}
+}
