@@ -62,7 +62,6 @@ export function collect<Value, Index, Err, R>(
 			throw err
 		},
 	})
-	// TODO: make this type-safe
 	return result!
 }
 

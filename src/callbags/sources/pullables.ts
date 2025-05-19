@@ -15,7 +15,6 @@ export function once<Value>(
 			pull() {
 				push(fromInit(init))
 				close()
-				return
 			},
 			result: noop,
 			unmount: noop,
@@ -30,9 +29,9 @@ export function onceAsync<Value>(
 		fromInit(init).then((value) => {
 			push(value)
 			close()
-			return
 		})
 		return {
+			pull: undefined,
 			result: noop,
 			unmount: noop,
 		}

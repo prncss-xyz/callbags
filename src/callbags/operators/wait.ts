@@ -1,8 +1,8 @@
 import { Source } from '../sources'
 import { pendingCounter } from './_internals'
 
-export function wait<A, Index>() {
-	return function <Err, R>(
+export function wait() {
+	return function <A, Index, Err, R>(
 		source: Source<Promise<A>, Index, Err, R>,
 	): Source<A, Index, Err, R> {
 		return function (args) {

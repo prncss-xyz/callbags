@@ -4,14 +4,16 @@ import { describe, expect, test } from 'vitest'
 
 import { map } from '.'
 import { collectAsync } from '../sinks'
-import { pushIterable } from '../sources'
+import { iterable } from '../sources'
+import { toPush } from '../subjects/toPush'
 import { arrayFold, scan } from './scan'
 import { wait } from './wait'
 
 describe('wait', () => {
 	test('collect last number', async () => {
 		const res = await flow(
-			pushIterable(Promise.resolve([9, 2, 0])),
+			iterable([9, 2, 0]),
+			toPush(),
 			map(async (v) => {
 				await timed(v * 10)
 				return v
