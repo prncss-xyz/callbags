@@ -1,7 +1,43 @@
 import { noop } from '@constellar/core'
 
 import { observe } from '../sinks'
-import { Source } from '../sources'
+import { AnyPullPush, Push, Source } from '../sources'
+
+export function toPush<Value, Index, Err, P extends AnyPullPush>(
+	source: Source<Value, Index, Err, void, P>,
+): Source<Value, Index, Err, void, Push> {
+	return function ({ close, error, push }) {
+		setTimeout(() => {
+			observe(source, {
+				error,
+				next: push,
+			})
+			close()
+		}, 0)
+		return {
+			pull: undefined,
+			result: noop,
+			unmount: noop,
+		}
+	}
+}
+
+function toPush0<Value, Index, Err, P extends AnyPullPush>(
+	source: Source<Value, Index, Err, void, P>,
+): Source<Value, Index, Err, void, Push> {
+	return function ({ close, error, push }) {
+		observe(source, {
+			error,
+			next: push,
+		})
+		close()
+		return {
+			pull: undefined,
+			result: noop,
+			unmount: noop,
+		}
+	}
+}
 
 function pendingCounter(onDone: () => void) {
 	let completed = false
@@ -28,30 +64,13 @@ function pendingCounter(onDone: () => void) {
 	}
 }
 
-function toPush<Value, Index, Err>(
-	source: Source<Value, Index, Err, void>,
-): Source<Value, Index, Err, void> {
-	return function ({ close, error, push }) {
-		observe(source, {
-			error,
-			next: push,
-		})
-		close()
-		return {
-			pull: undefined,
-			result: noop,
-			unmount: noop,
-		}
-	}
-}
-
 export function wait() {
-	return function <A, Index, Err>(
-		source: Source<Promise<A>, Index, Err, void>,
-	): Source<A, Index, Err, void> {
+	return function <A, Index, Err, P extends AnyPullPush>(
+		source: Source<Promise<A>, Index, Err, void, P>,
+	): Source<A, Index, Err, void, Push> {
 		return function (args) {
 			const { close, wrap } = pendingCounter(args.close)
-			return toPush(source)({
+			return toPush0(source)({
 				close,
 				error: args.error,
 				push(value, index) {

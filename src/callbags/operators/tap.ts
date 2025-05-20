@@ -1,6 +1,6 @@
-import { AnyPull, Source } from '../sources'
+import { AnyPullPush, Source } from '../sources'
 
-export function tap<Value, Index, Err, R, P extends AnyPull>(
+export function tap<Value, Index, Err, R, P extends AnyPullPush>(
 	cb: (value: Value, index: Index) => void,
 ) {
 	return function (

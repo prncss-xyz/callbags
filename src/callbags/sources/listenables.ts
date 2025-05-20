@@ -1,12 +1,13 @@
 import { noop } from '@constellar/core'
 
-import { Source } from './core'
+import { Push, Source } from './core'
 
 export function observable<Value, Index = void, Err = void>(): Source<
 	Value,
 	Index,
 	Err,
-	void
+	void,
+	Push
 > {
 	return function () {
 		return {
@@ -17,7 +18,9 @@ export function observable<Value, Index = void, Err = void>(): Source<
 	}
 }
 
-export function interval(period: number): Source<number, number, never, void> {
+export function interval(
+	period: number,
+): Source<number, number, never, void, Push> {
 	return function ({ push }) {
 		let index = 0
 		let handler = setInterval(() => {
@@ -34,26 +37,9 @@ export function interval(period: number): Source<number, number, never, void> {
 	}
 }
 
-export function pushIterable<Value>(
-	values: Iterable<Value>,
-): Source<Value, number, never, void> {
-	return function ({ close, push }) {
-		let index = 0
-		for (const value of values) {
-			push(value, index++)
-		}
-		close()
-		return {
-			pull: undefined,
-			result: noop,
-			unmount: noop,
-		}
-	}
-}
-
 export function asyncIterable<Value>(
 	values: AsyncIterable<Value>,
-): Source<Value, number, never, void> {
+): Source<Value, number, never, void, Push> {
 	return function ({ close, push }) {
 		let index = 0
 		;(async () => {
@@ -62,17 +48,6 @@ export function asyncIterable<Value>(
 			}
 			close()
 		})()
-		return {
-			pull: undefined,
-			result: noop,
-			unmount: noop,
-		}
-	}
-}
-
-export function empty<Value, Index, Err>(): Source<Value, Index, Err, void> {
-	return function ({ close }) {
-		close()
 		return {
 			pull: undefined,
 			result: noop,

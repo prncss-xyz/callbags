@@ -18,4 +18,3 @@ export function sortedAdd<T>(cmp: (a: T, b: T) => number) {
 		return acc.concat(t)
 	}
 }
-

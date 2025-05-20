@@ -1,7 +1,18 @@
 import { noop } from '@constellar/core'
 import { fromInit, Init } from '@prncss-xyz/utils'
 
-import { Source } from './core'
+import { Pull, Source } from './core'
+
+export function empty<Value, Index, Err>(): Source<Value, Index, Err, void, Pull> {
+	return function ({ close }) {
+		close()
+		return {
+			pull: noop,
+			result: noop,
+			unmount: noop,
+		}
+	}
+}
 
 /**
  * @param init - a value or a function returning this value
@@ -9,7 +20,7 @@ import { Source } from './core'
  */
 export function once<Value>(
 	init: Init<Value>,
-): Source<Value, void, never, void> {
+): Source<Value, void, never, void, Pull> {
 	return function ({ close, push }) {
 		return {
 			pull() {
@@ -22,25 +33,9 @@ export function once<Value>(
 	}
 }
 
-export function onceAsync<Value>(
-	init: Init<Promise<Value>>,
-): Source<Value, void, never, void> {
-	return function ({ close, push }) {
-		fromInit(init).then((value) => {
-			push(value)
-			close()
-		})
-		return {
-			pull: undefined,
-			result: noop,
-			unmount: noop,
-		}
-	}
-}
-
 export function iterable<Value>(
 	init: Iterable<Value>,
-): Source<Value, number, never, void> {
+): Source<Value, number, never, void, Pull> {
 	return function ({ close, push }) {
 		let index = 0
 		const iterator = init[Symbol.iterator]()

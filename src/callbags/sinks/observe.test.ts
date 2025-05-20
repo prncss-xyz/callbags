@@ -3,6 +3,7 @@ import { flow } from '@constellar/core'
 import { take } from '../operators'
 import { scan, valueFold } from '../operators/scan'
 import { interval, iterable } from '../sources'
+import { toPush } from '../subjects/wait'
 import { collect, collectAsync } from './observe'
 
 describe('collect', () => {
@@ -16,8 +17,7 @@ describe('collect', () => {
 describe('collectAsync', () => {
 	test('undefined', async () => {
 		const res = await flow(
-			[1, 2, 3, 4],
-			iterable,
+			toPush(iterable([1, 2, 3, 4])),
 			take(0),
 			scan(valueFold()),
 			collectAsync,
@@ -27,7 +27,7 @@ describe('collectAsync', () => {
 	})
 	test('defined', async () => {
 		const res = await flow(
-			iterable([1, 2, 3, 4]),
+			toPush(iterable([1, 2, 3, 4])),
 			take(2),
 			scan(valueFold()),
 			collectAsync,

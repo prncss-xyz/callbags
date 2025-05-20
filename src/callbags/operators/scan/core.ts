@@ -1,7 +1,7 @@
 import { id } from '@constellar/core'
 import { fromInit, Init } from '@prncss-xyz/utils'
 
-import { Source } from '../../sources'
+import { AnyPullPush, Source } from '../../sources'
 
 export interface Fold<Value, Acc, Index> {
 	fold: (value: Value, acc: Acc, index: Index, close: () => void) => Acc
@@ -9,9 +9,9 @@ export interface Fold<Value, Acc, Index> {
 }
 
 export function scan1<Value, Index>(fold: (acc: Value, value: Value) => Value) {
-	return function <Err, R>(
-		source: Source<Value, Index, Err, R>,
-	): Source<Value, Index, Err, Value> {
+	return function <Err, R, P extends AnyPullPush>(
+		source: Source<Value, Index, Err, R, P>,
+	): Source<Value, Index, Err, Value, P> {
 		return function (args) {
 			let closed = false
 			function close() {
@@ -45,9 +45,9 @@ export function scan<Value, Index, Acc>({
 	fold,
 	init,
 }: Fold<Value, Acc, Index>) {
-	return function <Err, R>(
-		source: Source<Value, Index, Err, R>,
-	): Source<Acc, Index, Err, Acc> {
+	return function <Err, R, P extends AnyPullPush>(
+		source: Source<Value, Index, Err, R, P>,
+	): Source<Acc, Index, Err, Acc, P> {
 		return function (args) {
 			let closed = false
 			function close() {
@@ -84,7 +84,10 @@ export function valueFold<Value, Index>(): Fold<
 
 export function arrayFold<Value, Index>(): Fold<Value, Value[], Index> {
 	return {
-		fold: (t, acc) => (acc.push(t), acc),
+		fold(t, acc) {
+			acc.push(t)
+			return acc
+		},
 		init: () => [],
 	}
 }

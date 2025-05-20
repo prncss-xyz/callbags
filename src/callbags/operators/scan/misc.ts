@@ -39,9 +39,7 @@ export function groupByFold<P extends PropertyKey, I, T>(
 		fold: (t: T, groups) => {
 			const key = keyFn(t)
 			if (key !== undefined) {
-				if (groups[key] === undefined) {
-					groups[key] = []
-				}
+				groups[key] ??= []
 				groups[key].push(t)
 			}
 			return groups

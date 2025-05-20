@@ -1,6 +1,6 @@
 import { isFunction, noop } from '@constellar/core'
 
-import { Source } from '../sources'
+import { AnyPullPush, Pull, Push, Source } from '../sources'
 
 interface ResolvedObserver<Value, Index, Err, Res> {
 	complete: (res: Res) => void
@@ -29,8 +29,8 @@ function resolveObserver<Value, Index, Err, Res>(
 	}
 }
 
-export function observe<Value, Index, Err, R>(
-	source: Source<Value, Index, Err, R>,
+export function observe<Value, Index, Err, R, P extends AnyPullPush>(
+	source: Source<Value, Index, Err, R, P>,
 	observer: Observer<Value, Index, Err, R>,
 ) {
 	const { complete, error, next } = resolveObserver(observer)
@@ -51,7 +51,7 @@ export function observe<Value, Index, Err, R>(
 }
 
 export function collect<Value, Index, Err, R>(
-	source: Source<Value, Index, Err, R>,
+	source: Source<Value, Index, Err, R, Pull>,
 ): R {
 	let result: R
 	observe(source, {
@@ -66,7 +66,7 @@ export function collect<Value, Index, Err, R>(
 }
 
 export function collectAsync<Value, Index, Err, R>(
-	source: Source<Value, Index, Err, R>,
+	source: Source<Value, Index, Err, R, Push>,
 ) {
 	let resolve: (result: R) => void
 	let reject: (result: any) => void

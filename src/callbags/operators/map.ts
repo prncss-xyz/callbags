@@ -1,6 +1,6 @@
-import { AnyPull, Source } from '../sources'
+import { AnyPullPush, Source } from '../sources'
 
-export function map<A, B, Index, P extends AnyPull>(
+export function map<A, B, Index, P extends AnyPullPush>(
 	cb: (value: A, index: Index) => B,
 ) {
 	return function <Err, R>(
