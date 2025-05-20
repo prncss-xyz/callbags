@@ -1,9 +1,9 @@
-import { Source } from '../sources'
+import { AnyPull, Source } from '../sources'
 
-export function _identity<Value, Index, Err, R>() {
+export function _identity<Value, Index, Err, R, P extends AnyPull>() {
 	return function (
-		source: Source<Value, Index, Err, R>,
-	): Source<Value, Index, Err, R> {
+		source: Source<Value, Index, Err, R, P>,
+	): Source<Value, Index, Err, R, P> {
 		return function (args) {
 			return source(args)
 		}
