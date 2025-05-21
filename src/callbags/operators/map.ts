@@ -9,8 +9,8 @@ export function map<A, B, Index, P extends AnyPullPush>(
 		return function (args) {
 			return source({
 				...args,
-				push(value, index) {
-					args.push(cb(value, index), index)
+				next(value, index) {
+					args.next(cb(value, index), index)
 				},
 			})
 		}

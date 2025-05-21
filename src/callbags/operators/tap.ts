@@ -9,9 +9,9 @@ export function tap<Value, Index, Err, R, P extends AnyPullPush>(
 		return function (args) {
 			return source({
 				...args,
-				push(value, index) {
+				next(value, index) {
 					cb(value, index)
-					args.push(value, index)
+					args.next(value, index)
 				},
 			})
 		}

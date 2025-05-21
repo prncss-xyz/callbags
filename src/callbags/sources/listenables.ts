@@ -21,10 +21,10 @@ export function observable<Value, Index = void, Err = void>(): Source<
 export function interval(
 	period: number,
 ): Source<number, number, never, void, Push> {
-	return function ({ push }) {
+	return function ({ next }) {
 		let index = 0
 		let handler = setInterval(() => {
-			push(index, index)
+			next(index, index)
 			index++
 		}, period)
 		return {
@@ -40,13 +40,13 @@ export function interval(
 export function asyncIterable<Value>(
 	values: AsyncIterable<Value>,
 ): Source<Value, number, never, void, Push> {
-	return function ({ close, push }) {
+	return function ({ complete, next }) {
 		let index = 0
 		;(async () => {
 			for await (const value of values) {
-				push(value, index++)
+				next(value, index++)
 			}
-			close()
+			complete()
 		})()
 		return {
 			pull: undefined,

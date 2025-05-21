@@ -1,52 +1,29 @@
-import { isFunction, noop } from '@constellar/core'
-
-import { AnyPullPush, Pull, Push, Source } from '../sources'
-
-interface ResolvedObserver<Value, Index, Err, Res> {
-	complete: (res: Res) => void
-	error: (fail: Err) => void
-	next: (value: Value, index: Index) => void
-}
-
-type Observer<Value, Index, Err, Res = void> =
-	| ((value: Value, index: Index) => void)
-	| Partial<ResolvedObserver<Value, Index, Err, Res>>
-
-function resolveObserver<Value, Index, Err, Res>(
-	observer: Observer<Value, Index, Err, Res>,
-) {
-	if (isFunction(observer)) {
-		return {
-			complete: noop,
-			error: noop,
-			next: observer,
-		}
-	}
-	return {
-		complete: observer.complete ?? noop,
-		error: observer.error ?? noop,
-		next: observer.next ?? noop,
-	}
-}
+import {
+	AnyPullPush,
+	ProObserver,
+	Pull,
+	Push,
+	resolveObserver,
+	Source,
+} from '../sources'
 
 export function observe<Value, Index, Err, R, P extends AnyPullPush>(
 	source: Source<Value, Index, Err, R, P>,
-	observer: Observer<Value, Index, Err, R>,
+	observer: ProObserver<Value, Index, Err, R>,
 ) {
 	const { complete, error, next } = resolveObserver(observer)
 	let opened = true
 	const { pull, result, unmount } = source({
-		close,
+		complete() {
+			opened = false
+			complete(result())
+			unmount()
+		},
 		error,
-		push(value, index) {
+		next(value, index) {
 			next(value, index)
 		},
 	})
-	function close() {
-		opened = false
-		complete(result())
-		unmount()
-	}
 	if (pull) while (opened) pull()
 }
 

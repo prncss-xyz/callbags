@@ -6,13 +6,13 @@ import { AnyPullPush, Push, Source } from '../sources'
 export function toPush<Value, Index, Err, P extends AnyPullPush>(
 	source: Source<Value, Index, Err, void, P>,
 ): Source<Value, Index, Err, void, Push> {
-	return function ({ close, error, push }) {
+	return function ({ complete, error, next }) {
 		setTimeout(() => {
 			observe(source, {
 				error,
-				next: push,
+				next,
 			})
-			close()
+			complete()
 		}, 0)
 		return {
 			pull: undefined,
@@ -25,12 +25,12 @@ export function toPush<Value, Index, Err, P extends AnyPullPush>(
 function toPush0<Value, Index, Err, P extends AnyPullPush>(
 	source: Source<Value, Index, Err, void, P>,
 ): Source<Value, Index, Err, void, Push> {
-	return function ({ close, error, push }) {
+	return function ({ complete, error, next }) {
 		observe(source, {
 			error,
-			next: push,
+			next,
 		})
-		close()
+		complete()
 		return {
 			pull: undefined,
 			result: noop,
@@ -48,7 +48,7 @@ function pendingCounter(onDone: () => void) {
 		}
 	}
 	return {
-		close() {
+		complete() {
 			completed = true
 			after()
 		},
@@ -69,12 +69,12 @@ export function wait() {
 		source: Source<Promise<A>, Index, Err, void, P>,
 	): Source<A, Index, Err, void, Push> {
 		return function (args) {
-			const { close, wrap } = pendingCounter(args.close)
+			const { complete, wrap } = pendingCounter(args.complete)
 			return toPush0(source)({
-				close,
+				complete,
 				error: args.error,
-				push(value, index) {
-					wrap(value.then((v) => args.push(v, index)))
+				next(value, index) {
+					wrap(value.then((v) => args.next(v, index)))
 				},
 			})
 		}

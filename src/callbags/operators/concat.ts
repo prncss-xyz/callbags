@@ -21,7 +21,7 @@ export function concat<V1, I1, E1, R1, P extends AnyPullPush>(
 			let pull: (() => void) | undefined
 			let unmount: () => void
 			const ofS1 = s1({
-				close() {
+				complete() {
 					unmount()
 					ofS2 = s2(args)
 					pull = ofS2.pull
@@ -30,7 +30,7 @@ export function concat<V1, I1, E1, R1, P extends AnyPullPush>(
 				error(e) {
 					args.error(e)
 				},
-				push: args.push,
+				next: args.next,
 			})
 			pull = ofS1.pull
 			unmount = ofS1.unmount

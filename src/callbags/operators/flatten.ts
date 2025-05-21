@@ -16,28 +16,28 @@ export function flatten<
 	return function (
 		sources: Source<Source<Value, II, EI, RI, P>, IO, EO, RO, P>,
 	): Source<Value, IO, EI | EO, void, P> {
-		return function ({ close, error, push }) {
+		return function ({ complete, error, next }) {
 			const unmounts = new Set<() => void>()
 			let pulls: (() => void)[] = []
 			let index: IO
 			let done = false
 			const { pull, unmount } = sources({
-				close() {
+				complete() {
 					done = true
-					if (unmounts.size === 0) close()
+					if (unmounts.size === 0) complete()
 				},
 				error,
-				push(source) {
+				next(source) {
 					const { pull, unmount } = source({
-						close() {
+						complete() {
 							unmount()
 							unmounts.delete(unmount)
-							if (unmounts.size === 0 && done) close()
+							if (unmounts.size === 0 && done) complete()
 							pulls = pulls.filter((p) => p !== pull)
 						},
 						error,
-						push(value) {
-							push(value, index!)
+						next(value) {
+							next(value, index!)
 						},
 					})
 					unmounts.add(unmount)

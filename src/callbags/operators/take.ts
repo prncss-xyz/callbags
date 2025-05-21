@@ -8,14 +8,14 @@ export function take(n: number) {
 			let count = 0
 			return source({
 				...args,
-				push(value, index) {
+				next(value, index) {
 					if (n === 0) {
-						args.close()
+						args.complete()
 						return
 					}
 					count++
-					args.push(value, index)
-					if (count === n) args.close()
+					args.next(value, index)
+					if (count === n) args.complete()
 				},
 			})
 		}

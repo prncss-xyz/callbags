@@ -1,6 +1,6 @@
 import { flow } from '@constellar/core'
 
-import { collect, collectAsync } from '../sinks'
+import { collect } from '../sinks'
 import { iterable } from '../sources'
 import { arrayFold, scan } from './scan'
 import { zip } from './zip'

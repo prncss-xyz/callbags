@@ -38,10 +38,10 @@ export function zip<VB, IB, EB, RB, C, VA, P extends AnyPullPush>(
 	return function <IA, EA, RA>(
 		sa: Source<VA, IA, EA, RA, P>,
 	): Source<C, IA, EA | EB, void, P> {
-		return function ({ close, error, push }) {
-			const { pushA, pushB } = merger(f, push)
-			const ofS1 = sa({ close, error, push: pushA })
-			const ofS2 = sb({ close, error, push: pushB })
+		return function ({ complete, error, next }) {
+			const { pushA: nextA, pushB: nextB } = merger(f, next)
+			const ofS1 = sa({ complete, error, next: nextA })
+			const ofS2 = sb({ complete, error, next: nextB })
 			return {
 				pull: (ofS1.pull && ofS2.pull
 					? () => {

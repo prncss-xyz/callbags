@@ -22,14 +22,14 @@ export function scan1<Value, Index>(fold: (acc: Value, value: Value) => Value) {
 			return {
 				...source({
 					...args,
-					push(value, index) {
+					next(value, index) {
 						if (first) {
 							acc = value
 							first = false
 						} else {
 							acc = fold(acc, value)
 						}
-						args.push(acc, index)
+						args.next(acc, index)
 						if (closed) close()
 					},
 				}),
@@ -49,18 +49,18 @@ export function scan<Value, Index, Acc>({
 		source: Source<Value, Index, Err, R, P>,
 	): Source<Acc, Index, Err, Acc, P> {
 		return function (args) {
-			let closed = false
-			function close() {
-				closed = true
+			let completed = false
+			function complete() {
+				completed = true
 			}
 			let acc = fromInit(init)
 			return {
 				...source({
 					...args,
-					push(value, index) {
-						acc = fold(value, acc, index, close)
-						args.push(acc, index)
-						if (closed) close()
+					next(value, index) {
+						acc = fold(value, acc, index, complete)
+						args.next(acc, index)
+						if (completed) complete()
 					},
 				}),
 				result() {
