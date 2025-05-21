@@ -1,7 +1,7 @@
 import { insert } from '@constellar/core'
 
 import { cmp0, sortedAdd } from './_internals'
-import { Fold } from './core'
+import { Fold, Fold1 } from './core'
 
 export function maxFold(): Fold<number, number, number> {
 	return {
@@ -17,17 +17,15 @@ export function minFold(): Fold<number, number, number> {
 	}
 }
 
-export function maxWithFold<T, I>(cmp = cmp0<T>): Fold<T, T | undefined, I> {
+export function maxWithFold<T, I>(cmp = cmp0<T>): Fold1<T, I> {
 	return {
 		fold: (t, acc) => (acc === undefined || cmp(t, acc) > 0 ? t : acc),
-		init: undefined,
 	}
 }
 
-export function minWithFold<T, I>(cmp = cmp0<T>): Fold<T, T | undefined, I> {
+export function minWithFold<T, I>(cmp = cmp0<T>): Fold1<T, I> {
 	return {
 		fold: (t, acc) => (acc === undefined || cmp(t, acc) < 0 ? t : acc),
-		init: undefined,
 	}
 }
 

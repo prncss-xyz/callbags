@@ -15,10 +15,6 @@
 
 - ProSource
 
-- Use Observer type in Source definition
-
-- rename push to next
-
 ## Maybe
 
 - async iterator
