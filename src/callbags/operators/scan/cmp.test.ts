@@ -2,8 +2,27 @@ import { flow, shallowEqual } from '@constellar/core'
 
 import { collect } from '../../sinks'
 import { iterable } from '../../sources'
-import { maxFold, minFold, shuffleFold, sortFold } from './cmp'
+import { maxFold, maxWithFold, minFold, shuffleFold, sortFold } from './cmp'
 import { scan } from './core'
+
+describe('maxWithFold', () => {
+	test('empty', () => {
+		const res = flow(
+			iterable<number>([]),
+			scan(maxWithFold((a, b) => a - b)),
+			collect,
+		)
+		expect(res).toEqual(undefined)
+	})
+	test('defined', () => {
+		const res = flow(
+			iterable<number>([0, 2, 1]),
+			scan(maxWithFold((a, b) => a - b)),
+			collect,
+		)
+		expect(res).toEqual(2)
+	})
+})
 
 describe('maxFold', () => {
 	test('empty', () => {

@@ -3,41 +3,46 @@ import { fromInit, Init } from '@prncss-xyz/utils'
 
 import { AnyPullPush, Observer, Source } from '../../sources'
 
-interface Fold_<Value, Acc, Index> {
-	fold: (value: Value, acc: Acc, index: Index, close: () => void) => Acc
-	init?: Init<Acc>
-}
-
-export interface Fold<Value, Acc, Index> {
-	fold: (value: Value, acc: Acc, index: Index, close: () => void) => Acc
+export interface Fold<Value, Acc, Index, R = Acc> {
+	fold: (value: Value, acc: Acc, index: Index) => Acc
+	foldDest?: (value: Value, acc: Acc, index: Index) => Acc
 	init: Init<Acc>
+	result?: (acc: Acc) => R
 }
 
-export interface Fold1<Acc, Index> {
-	fold: (value: Acc, acc: Acc, index: Index, close: () => void) => Acc
+export interface Fold1<Acc, Index, R = Acc, Or = undefined> {
+	fold: (value: Acc, acc: Acc, index: Index) => Acc
+	foldDest?: (value: Acc, acc: Acc, index: Index) => Acc
+	or?: () => Or
+	result?: (acc: Acc) => R
 }
 
-export function scan<Value, Index, Acc>({
-	fold,
-	init,
-}: Fold<Value, Acc, Index>): <Err, R, P extends AnyPullPush>(
-	source: Source<Value, Index, Err, R, P>,
-) => Source<Acc, Index, Err, Acc, P>
-export function scan<Acc, Index>({
-	fold,
-}: Fold1<Acc, Index>): <Err, R, P extends AnyPullPush>(
-	source: Source<Acc, Index, Err, R, P>,
-) => Source<Acc, Index, Err, Acc | undefined, P>
-export function scan<Value, Index, Acc>(foldProps: Fold_<Value, Acc, Index>) {
+interface ScanProps<Value, Acc, Index, R, Or> {
+	fold: (value: Value, acc: Acc, index: Index) => Acc
+	init?: Init<Acc>
+	or?: () => Or
+	result?: (acc: Acc) => R
+}
+
+export function scan<Value, Index, Acc, R = Acc>(
+	props: Fold<Value, Acc, Index, R>,
+): <Err, RS, P extends AnyPullPush>(
+	source: Source<Value, Index, Err, RS, P>,
+) => Source<Acc, Index, Err, R, P>
+export function scan<Acc, Index, R = Acc, Or = undefined>(
+	props: Fold1<Acc, Index, Acc, Or>,
+): <Err, RS, P extends AnyPullPush>(
+	source: Source<Acc, Index, Err, RS, P>,
+) => Source<Acc, Index, Err, Or | R, P>
+export function scan<Value, Index, Acc, R, Alt>(
+	foldProps: ScanProps<Value, Acc, Index, R, Alt>,
+) {
 	return function <Err, R, P extends AnyPullPush>(
 		source: Source<Value, Index, Err, R, P>,
 	) {
 		return function (props: Observer<Acc, Index, Err, void>) {
 			const fold = foldProps.fold
-			let completed = false
-			function complete() {
-				completed = true
-			}
+			const result = foldProps.result ?? id<any>
 			let acc: Acc
 			let dirty = false
 			if ('init' in foldProps) {
@@ -48,17 +53,19 @@ export function scan<Value, Index, Acc>(foldProps: Fold_<Value, Acc, Index>) {
 				...source({
 					...props,
 					next(value, index) {
-						if (dirty) acc = fold(value, acc, index, complete)
+						if (dirty) acc = fold(value, acc, index)
 						else {
 							dirty = true
 							acc = value as any
 						}
-						props.next(acc, index)
-						if (completed) complete()
+						props.next(result(acc), index)
 					},
 				}),
-				result(): any {
-					return dirty ? acc : (undefined as any)
+				result() {
+					if (dirty) return result(acc)
+					const alt = foldProps.or
+					if (alt) return alt()
+					return undefined
 				},
 			}
 		}

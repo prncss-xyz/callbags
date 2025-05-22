@@ -1,5 +1,13 @@
 # TODO
 
+- iterator: make work with push and pull
+
+- args `=>` props
+
+- properly closing stuff on error
+
+- ProSource
+
 - operators:
 
   - chain
@@ -7,13 +15,6 @@
   - debounce
   - debounceKey
   - throttle
-
-- properly closing stuff on error
-
-- unify scan and scan1
-- scanDest
-
-- ProSource
 
 ## Maybe
 

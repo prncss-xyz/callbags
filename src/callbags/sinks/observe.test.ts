@@ -6,6 +6,8 @@ import { interval, iterable } from '../sources'
 import { toPush } from '../subjects/wait'
 import { collect, collectAsync } from './observe'
 
+const x = scan(valueFold<number, number>())
+
 describe('collect', () => {
 	test('collect last number', () => {
 		const res = flow(iterable([1, 2, 3, 4]), scan(valueFold()), collect)
