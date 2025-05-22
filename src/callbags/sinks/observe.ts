@@ -2,7 +2,6 @@ import {
 	AnyPullPush,
 	ProObserver,
 	Pull,
-	Push,
 	resolveObserver,
 	Source,
 } from '../sources'
@@ -27,6 +26,28 @@ export function observe<Value, Index, Err, R, P extends AnyPullPush>(
 	if (pull) while (opened) pull()
 }
 
+export function observeAsync<Value, Index, Err, R, P extends AnyPullPush>(
+	source: Source<Value, Index, Err, R, P>,
+	observer: ProObserver<Value, Index, Err, R>,
+) {
+	const { complete, error, next } = resolveObserver(observer)
+	let opened = true
+	const { pull, result, unmount } = source({
+		complete() {
+			opened = false
+			complete(result())
+			unmount()
+		},
+		error,
+		next(value, index) {
+			next(value, index)
+		},
+	})
+	setTimeout(() => {
+		if (pull) while (opened) pull()
+	}, 0)
+}
+
 export function collect<Value, Index, Err, R>(
 	source: Source<Value, Index, Err, R, Pull>,
 ): R {
@@ -43,7 +64,7 @@ export function collect<Value, Index, Err, R>(
 }
 
 export function collectAsync<Value, Index, Err, R>(
-	source: Source<Value, Index, Err, R, Push>,
+	source: Source<Value, Index, Err, R, AnyPullPush>,
 ) {
 	let resolve: (result: R) => void
 	let reject: (result: any) => void
@@ -51,7 +72,7 @@ export function collectAsync<Value, Index, Err, R>(
 		resolve = resolve_
 		reject = reject_
 	})
-	observe(source, {
+	observeAsync(source, {
 		complete(r) {
 			resolve(r)
 		},

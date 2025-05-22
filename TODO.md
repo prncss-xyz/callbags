@@ -1,6 +1,6 @@
 # TODO
 
-- iterator: make work with push and pull
+- refact sinks
 
 - properly closing stuff on error
 

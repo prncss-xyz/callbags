@@ -3,26 +3,7 @@ import { noop } from '@constellar/core'
 import { observe } from '../sinks'
 import { AnyPullPush, Push, Source } from '../sources'
 
-export function toPush<Value, Index, Err, P extends AnyPullPush>(
-	source: Source<Value, Index, Err, void, P>,
-): Source<Value, Index, Err, void, Push> {
-	return function ({ complete, error, next }) {
-		setTimeout(() => {
-			observe(source, {
-				error,
-				next,
-			})
-			complete()
-		}, 0)
-		return {
-			pull: undefined,
-			result: noop,
-			unmount: noop,
-		}
-	}
-}
-
-function toPush0<Value, Index, Err, P extends AnyPullPush>(
+function toPush<Value, Index, Err, P extends AnyPullPush>(
 	source: Source<Value, Index, Err, void, P>,
 ): Source<Value, Index, Err, void, Push> {
 	return function ({ complete, error, next }) {
@@ -70,7 +51,7 @@ export function wait() {
 	): Source<A, Index, Err, void, Push> {
 		return function (props) {
 			const { complete, wrap } = pendingCounter(props.complete)
-			return toPush0(source)({
+			return toPush(source)({
 				complete,
 				error: props.error,
 				next(value, index) {
