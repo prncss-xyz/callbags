@@ -4,8 +4,8 @@ export function _identity<Value, Index, Err, R, P extends AnyPullPush>() {
 	return function (
 		source: Source<Value, Index, Err, R, P>,
 	): Source<Value, Index, Err, R, P> {
-		return function (args) {
-			return source(args)
+		return function (props) {
+			return source(props)
 		}
 	}
 }

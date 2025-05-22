@@ -6,12 +6,12 @@ export function tap<Value, Index, Err, R, P extends AnyPullPush>(
 	return function (
 		source: Source<Value, Index, Err, R, P>,
 	): Source<Value, Index, Err, R, P> {
-		return function (args) {
+		return function (props) {
 			return source({
-				...args,
+				...props,
 				next(value, index) {
 					cb(value, index)
-					args.next(value, index)
+					props.next(value, index)
 				},
 			})
 		}

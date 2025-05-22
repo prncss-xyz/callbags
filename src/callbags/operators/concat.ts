@@ -16,21 +16,21 @@ export function concat<V1, I1, E1, R1, P extends AnyPullPush>(
 	return function <V2, I2, E2, R2>(
 		s1: Source<V2, I2, E2, R2, P>,
 	): Source<V1 | V2, I1 | I2, E1 | E2, R1 | R2, P> {
-		return function (args) {
+		return function (props) {
 			let ofS2: ReturnType<Source<V1, I1, E1, R1, P>>
 			let pull: (() => void) | undefined
 			let unmount: () => void
 			const ofS1 = s1({
 				complete() {
 					unmount()
-					ofS2 = s2(args)
+					ofS2 = s2(props)
 					pull = ofS2.pull
 					unmount = ofS2.unmount
 				},
 				error(e) {
-					args.error(e)
+					props.error(e)
 				},
-				next: args.next,
+				next: props.next,
 			})
 			pull = ofS1.pull
 			unmount = ofS1.unmount

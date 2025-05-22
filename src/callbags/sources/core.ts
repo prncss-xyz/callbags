@@ -32,7 +32,7 @@ export type Push = undefined
 export type AnyPullPush = Pull | Push
 
 export type Source<Value, Index, Err, R, P extends AnyPullPush> = (
-	args: Observer<Value, Index, Err, void>,
+	props: Observer<Value, Index, Err, void>,
 ) => {
 	pull: P
 	result(): R

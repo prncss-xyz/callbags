@@ -68,13 +68,13 @@ export function wait() {
 	return function <A, Index, Err, P extends AnyPullPush>(
 		source: Source<Promise<A>, Index, Err, void, P>,
 	): Source<A, Index, Err, void, Push> {
-		return function (args) {
-			const { complete, wrap } = pendingCounter(args.complete)
+		return function (props) {
+			const { complete, wrap } = pendingCounter(props.complete)
 			return toPush0(source)({
 				complete,
-				error: args.error,
+				error: props.error,
 				next(value, index) {
-					wrap(value.then((v) => args.next(v, index)))
+					wrap(value.then((v) => props.next(v, index)))
 				},
 			})
 		}
