@@ -1,10 +1,22 @@
 # TODO
 
-- refact sinks
+- merge sync and async methods
 
-- properly closing stuff on error
+- fix concat
 
 - ProSource
+
+- collect with scan1: deal with empty
+
+- observable
+
+- monads
+
+  - opt
+  - maybe
+  - error
+
+- pick/multi
 
 - operators:
 

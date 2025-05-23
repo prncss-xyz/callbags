@@ -7,7 +7,7 @@ import { iterable } from '../sources'
 describe('tap', () => {
 	test('', () => {
 		const cb = vi.fn()
-		const res = flow([1, 2, 3], iterable, tap(cb), collect)
+		const res = flow(iterable([1, 2, 3]), tap(cb), collect)
 		expect(cb.mock.calls).toEqual([
 			[1, 0],
 			[2, 1],

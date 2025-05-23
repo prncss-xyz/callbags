@@ -3,14 +3,14 @@ import { insert } from '@constellar/core'
 import { cmp0, sortedAdd } from './_internals'
 import { Fold, Fold1 } from './core'
 
-export function maxFold(): Fold<number, number, number> {
+export function maxFold<I>(): Fold<number, number, I> {
 	return {
 		fold: (t, acc) => (t > acc ? t : acc),
 		init: -Infinity,
 	}
 }
 
-export function minFold(): Fold<number, number, number> {
+export function minFold<I>(): Fold<number, number, I> {
 	return {
 		fold: (t, acc) => (t < acc ? t : acc),
 		init: Infinity,

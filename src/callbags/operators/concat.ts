@@ -1,5 +1,6 @@
 import { AnyPullPush, Pull, Push, Source } from '../sources'
 
+// FIXME:
 export function concat<V1, I1, E1, R1>(
 	s2: Source<V1, I1, E1, R1, Pull>,
 ): <V2, I2, E2, R2>(

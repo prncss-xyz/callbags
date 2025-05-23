@@ -8,8 +8,7 @@ import { take } from './take'
 describe('take', () => {
 	test('undefined', () => {
 		const res = flow(
-			[1, 2, 3, 4],
-			iterable,
+			iterable([1, 2, 3, 4]),
 			take(0),
 			scan(valueFold()),
 			collect,
@@ -18,8 +17,7 @@ describe('take', () => {
 	})
 	test('defined', () => {
 		const res = flow(
-			[1, 2, 3, 4],
-			iterable,
+			iterable([1, 2, 3, 4]),
 			take(2),
 			scan(valueFold()),
 			collect,

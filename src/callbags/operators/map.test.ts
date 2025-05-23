@@ -9,8 +9,7 @@ import { scan, valueFold } from './scan'
 describe('map', () => {
 	test('changes type', () => {
 		const res = flow(
-			[1, 2, 3, 4],
-			iterable,
+			iterable([1, 2, 3, 4]),
 			map(mul(2)),
 			map(String),
 			map((x, i) => x + i),
