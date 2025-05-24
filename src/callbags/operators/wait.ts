@@ -1,24 +1,4 @@
-import { noop } from '@constellar/core'
-
-import { observe } from '../sinks'
-import { AnyPullPush, Push, Source } from '../sources'
-
-function toPush<Value, Index, Err, P extends AnyPullPush>(
-	source: Source<Value, Index, Err, void, P>,
-): Source<Value, Index, Err, void, Push> {
-	return function ({ complete, error, next }) {
-		observe(source, {
-			error,
-			next,
-		})
-		complete()
-		return {
-			pull: undefined,
-			result: noop,
-			unmount: noop,
-		}
-	}
-}
+import { Push, Source } from '../sources'
 
 function pendingCounter(onDone: () => void) {
 	let completed = false
@@ -46,12 +26,12 @@ function pendingCounter(onDone: () => void) {
 }
 
 export function wait() {
-	return function <A, Index, Err, P extends AnyPullPush>(
-		source: Source<Promise<A>, Index, Err, void, P>,
+	return function <A, Index, Err>(
+		source: Source<Promise<A>, Index, Err, void, Push>,
 	): Source<A, Index, Err, void, Push> {
 		return function (props) {
 			const { complete, wrap } = pendingCounter(props.complete)
-			return toPush(source)({
+			return source({
 				complete,
 				error: props.error,
 				next(value, index) {

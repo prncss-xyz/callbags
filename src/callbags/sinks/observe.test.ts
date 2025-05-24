@@ -14,25 +14,6 @@ describe('collect', () => {
 })
 
 describe('collectAsync', () => {
-	test('undefined', async () => {
-		const res = await flow(
-			iterable([1, 2, 3, 4]),
-			take(0),
-			scan(valueFold()),
-			collectAsync,
-		)
-		expectTypeOf(res).toEqualTypeOf<number | undefined>()
-		expect(res).toEqual(undefined)
-	})
-	test('defined', async () => {
-		const res = await flow(
-			iterable([1, 2, 3, 4]),
-			take(2),
-			scan(valueFold()),
-			collectAsync,
-		)
-		expect(res).toEqual(2)
-	})
 	test('interval', async () => {
 		const res = await flow(
 			interval(1),

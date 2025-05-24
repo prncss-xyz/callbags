@@ -2,11 +2,12 @@ import { flow } from '@constellar/core'
 
 import { collect, collectAsync } from '../sinks'
 import { iterable } from '../sources'
+import { toPush } from '../subjects/toPush'
 import { concat } from './concat'
 import { arrayFold, scan } from './scan'
 
-describe('collect', () => {
-	test('collect last number', () => {
+describe('concat', () => {
+	test('sync', () => {
 		const res = flow(
 			iterable([0, 1]),
 			concat(iterable(['a', 'b'])),
@@ -18,8 +19,8 @@ describe('collect', () => {
 	})
 	test('async', async () => {
 		const res = await flow(
-			iterable([0, 1]),
-			concat(iterable(['a', 'b'])),
+			toPush(iterable([0, 1])),
+			concat(toPush(iterable(['a', 'b']))),
 			scan(arrayFold()),
 			collectAsync,
 		)

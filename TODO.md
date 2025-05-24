@@ -1,12 +1,6 @@
 # TODO
 
-- merge sync and async methods
-
-- fix concat
-
-- ProSource
-
-- collect with scan1: deal with empty
+- unify sync, async
 
 - observable
 

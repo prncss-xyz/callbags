@@ -8,14 +8,14 @@ import { scan, valueFold } from './scan'
 
 describe('map', () => {
 	test('changes type', () => {
-		const res = flow(
+		const r1 = flow(
 			iterable([1, 2, 3, 4]),
 			map(mul(2)),
 			map(String),
 			map((x, i) => x + i),
 			scan(valueFold()),
-			collect,
 		)
+		const res = collect(r1)
 		expect(res).toEqual('83')
 		expectTypeOf(res).toEqualTypeOf<string | undefined>()
 	})

@@ -3,6 +3,8 @@ import { fromInit, Init } from '@prncss-xyz/utils'
 
 import { AnyPullPush, Observer, Source } from '../../sources'
 
+const emptyError = 'empty'
+
 export interface Fold<Value, Acc, Index, R = Acc> {
 	fold: (value: Value, acc: Acc, index: Index) => Acc
 	foldDest?: (value: Value, acc: Acc, index: Index) => Acc
@@ -10,37 +12,54 @@ export interface Fold<Value, Acc, Index, R = Acc> {
 	result?: (acc: Acc) => R
 }
 
-export interface Fold1<Acc, Index, R = Acc, Or = undefined> {
+export interface Fold1<Acc, Index, R = Acc> {
 	fold: (value: Acc, acc: Acc, index: Index) => Acc
 	foldDest?: (value: Acc, acc: Acc, index: Index) => Acc
-	or?: () => Or
 	result?: (acc: Acc) => R
 }
 
-interface ScanProps<Value, Acc, Index, R, Or> {
+interface ScanProps<Value, Acc, Index, R> {
 	fold: (value: Value, acc: Acc, index: Index) => Acc
+	foldDest?: (value: Acc, acc: Acc, index: Index) => Acc
 	init?: Init<Acc>
-	or?: () => Or
 	result?: (acc: Acc) => R
 }
 
-export function scan<Value, Index, Acc, R = Acc>(
+export function toDest<Value, Acc, Index, R>(
+	props: Fold<Value, Acc, Index, R>,
+): Fold<Value, Acc, Index, R>
+export function toDest<Acc, Index, R>(
+	props: Fold1<Acc, Index, R>,
+): Fold1<Acc, Index, R>
+export function toDest<Value, Acc, Index, R>(
+	props: ScanProps<Value, Acc, Index, R>,
+) {
+	return {
+		fold: props.foldDest ?? props.fold,
+		init: props.init,
+		result: props.result,
+	}
+}
+
+export function scan<Value, Index, Acc, R>(
 	props: Fold<Value, Acc, Index, R>,
 ): <Err, RS, P extends AnyPullPush>(
 	source: Source<Value, Index, Err, RS, P>,
 ) => Source<Acc, Index, Err, R, P>
-export function scan<Acc, Index, R = Acc, Or = undefined>(
-	props: Fold1<Acc, Index, Acc, Or>,
+export function scan<Acc, Index>(
+	props: Fold1<Acc, Index, Acc>,
 ): <Err, RS, P extends AnyPullPush>(
 	source: Source<Acc, Index, Err, RS, P>,
-) => Source<Acc, Index, Err, Or | R, P>
-export function scan<Value, Index, Acc, R, Alt>(
-	foldProps: ScanProps<Value, Acc, Index, R, Alt>,
+) => Source<Acc, Index, Err | typeof emptyError, Acc, P>
+export function scan<Value, Index, Acc, R>(
+	foldProps: ScanProps<Value, Acc, Index, R>,
 ) {
 	return function <Err, R, P extends AnyPullPush>(
 		source: Source<Value, Index, Err, R, P>,
 	) {
-		return function (props: Observer<Acc, Index, Err, void>) {
+		return function (
+			props: Observer<Acc, Index, Err | typeof emptyError, void>,
+		) {
 			const fold = foldProps.fold
 			const result = foldProps.result ?? id<any>
 			let acc: Acc
@@ -52,6 +71,13 @@ export function scan<Value, Index, Acc, R, Alt>(
 			return {
 				...source({
 					...props,
+					complete(res) {
+						if (dirty) {
+							props.complete(res)
+						} else {
+							props.error(emptyError)
+						}
+					},
 					next(value, index) {
 						if (dirty) acc = fold(value, acc, index)
 						else {
@@ -63,9 +89,7 @@ export function scan<Value, Index, Acc, R, Alt>(
 				}),
 				result() {
 					if (dirty) return result(acc)
-					const alt = foldProps.or
-					if (alt) return alt()
-					return undefined
+					throw new Error('unexpected codepath')
 				},
 			}
 		}
@@ -80,17 +104,11 @@ export function valueFold<Value, Index>(): Fold1<Value, Index> {
 
 export function arrayFold<Value, Index>(): Fold<Value, Value[], Index> {
 	return {
-		fold(t, acc) {
+		fold: (t, acc) => [...acc, t],
+		foldDest(t, acc) {
 			acc.push(t)
 			return acc
 		},
-		init: () => [],
-	}
-}
-
-export function arrayFoldCopy<Value, Index>(): Fold<Value, Value[], Index> {
-	return {
-		fold: (t, acc) => [...acc, t],
 		init: () => [],
 	}
 }

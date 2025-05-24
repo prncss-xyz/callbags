@@ -1,6 +1,6 @@
+import { defer } from '../sinks'
 import { AnyPullPush, Pull, Push, Source } from '../sources'
 
-// FIXME:
 export function concat<V1, I1, E1, R1>(
 	s2: Source<V1, I1, E1, R1, Pull>,
 ): <V2, I2, E2, R2>(
@@ -23,7 +23,11 @@ export function concat<V1, I1, E1, R1, P extends AnyPullPush>(
 			let unmount: () => void
 			const ofS1 = s1({
 				complete() {
-					unmount()
+					if (unmount) unmount()
+					else
+						defer(() => {
+							unmount()
+						})
 					ofS2 = s2(props)
 					pull = ofS2.pull
 					unmount = ofS2.unmount

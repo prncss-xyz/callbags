@@ -1,19 +1,50 @@
 import { flow } from '@constellar/core'
 
-import { collect } from '../sinks'
-import { iterable } from '../sources'
+import { collect, collectAsync } from '../sinks'
+import { interval, iterable } from '../sources'
+import { toPush } from '../subjects/toPush'
 import { arrayFold, scan } from './scan'
 import { zip } from './zip'
 
-describe('collect', () => {
-	test('collect last number', () => {
+describe('zip', () => {
+	test('right shorter', () => {
 		const res = flow(
-			iterable([0, 1]),
+			iterable([0, 1, 2]),
 			zip(iterable(['a', 'b']), (a, b) => a + b),
 			scan(arrayFold()),
 			collect,
 		)
 		expect(res).toEqual(['0a', '1b'])
+		expectTypeOf(res).toEqualTypeOf<string[]>()
+	})
+	test('left shorter', () => {
+		const res = flow(
+			iterable([0, 1]),
+			zip(iterable(['a', 'b', 'c']), (a, b) => a + b),
+			scan(arrayFold()),
+			collect,
+		)
+		expect(res).toEqual(['0a', '1b'])
+		expectTypeOf(res).toEqualTypeOf<string[]>()
+	})
+	test('left async right sync', async () => {
+		const res = await flow(
+			interval(10),
+			zip(toPush(iterable(['a', 'b'])), (a, b) => a + b),
+			scan(arrayFold()),
+			collectAsync,
+		)
+		expect(res).toEqual(['0a', '1b'])
+		expectTypeOf(res).toEqualTypeOf<string[]>()
+	})
+	test('right async left sync', async () => {
+		const res = await flow(
+			toPush(iterable(['a', 'b'])),
+			zip(interval(10), (a, b) => a + b),
+			scan(arrayFold()),
+			collectAsync,
+		)
+		expect(res).toEqual(['a0', 'b1'])
 		expectTypeOf(res).toEqualTypeOf<string[]>()
 	})
 })
