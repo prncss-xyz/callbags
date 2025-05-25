@@ -2,78 +2,86 @@ import { noop } from '@constellar/core'
 
 import { AnyPullPush, Source } from '../sources'
 
-function merger<A, B, C, I>(
-	f: (a: A, b: B, i: I) => C,
-	pushC: (c: C, i: I) => void,
-	completeC: () => void,
+function merger<VL, VR, V, IL>(
+	merge: (left: VL, right: VR, i: IL) => V,
+	push: (c: V, i: IL) => void,
+	complete: () => void,
 ) {
-	let openedA = true
-	let openedB = true
-	const as: A[] = []
-	const is: I[] = []
-	const bs: B[] = []
+	let openedLeft = true
+	let openedRight = true
+	const ls: VL[] = []
+	const is: IL[] = []
+	const rs: VR[] = []
 	return {
-		completeA() {
-			if (openedB) {
-				openedA = false
+		completeLeft() {
+			if (openedRight) {
+				openedLeft = false
 				return
 			}
-			completeC()
+			complete()
 		},
-		completeB() {
-			if (openedA) {
-				openedB = false
+		completeRight() {
+			if (openedLeft) {
+				openedRight = false
 				return
 			}
-			completeC()
+			complete()
 		},
-		nextA(a: A, i: I) {
-			if (!openedA) return
-			if (bs.length) {
-				const b = bs.shift()!
-				pushC(f(a, b, i), i)
-				if (!bs.length && !openedB) completeC()
+		nextLeft(l: VL, i: IL) {
+			if (!openedLeft) return
+			if (rs.length) {
+				const r = rs.shift()!
+				push(merge(l, r, i), i)
+				if (!rs.length && !openedRight) complete()
 				return
 			}
-			as.push(a)
+			ls.push(l)
 			is.push(i)
 		},
-		nextB(b: B) {
-			if (!openedB) return
-			if (as.length) {
-				const a = as.shift()!
+		nextRight(r: VR) {
+			if (!openedRight) return
+			if (ls.length) {
+				const a = ls.shift()!
 				const i = is.shift()!
-				pushC(f(a, b, i), i)
-				if (!as.length && !openedA) completeC()
+				push(merge(a, r, i), i)
+				if (!ls.length && !openedLeft) complete()
 				return
 			}
-			bs.push(b)
+			rs.push(r)
 		},
 	}
 }
 
-export function zip<VB, IB, EB, RB, C, VA, P extends AnyPullPush>(
-	sb: Source<VB, IB, EB, RB, P>,
-	f: (a: VA, b: VB) => C,
+export function zip<VR, IR, ER, RR, V, VL, P extends AnyPullPush>(
+	sourceRight: Source<VR, IR, ER, RR, P>,
+	merge: (a: VL, b: VR) => V,
 ) {
-	return function <IA, EA, RA>(
-		sa: Source<VA, IA, EA, RA, P>,
-	): Source<C, IA, EA | EB, void, P> {
+	return function <IL, EL, RL>(
+		sourceLeft: Source<VL, IL, EL, RL, P>,
+	): Source<V, IL, EL | ER, void, P> {
 		return function ({ complete, error, next }) {
-			const { completeA, completeB, nextA, nextB } = merger(f, next, complete)
-			const ofS1 = sa({ complete: completeA, error, next: nextA })
-			const ofS2 = sb({ complete: completeB, error, next: nextB })
+			const { completeLeft, completeRight, nextLeft, nextRight } = merger(
+				merge,
+				next,
+				complete,
+			)
+			const ofSL = sourceLeft({ complete: completeLeft, error, next: nextLeft })
+			const ofSR = sourceRight({
+				complete: completeRight,
+				error,
+				next: nextRight,
+			})
 			return {
-				pull: (ofS1.pull || ofS2.pull
+				pull: (ofSL.pull || ofSR.pull
 					? () => {
-							ofS1.pull?.()
-							ofS2.pull?.()
+							ofSL.pull?.()
+							ofSR.pull?.()
 						}
 					: undefined) as any,
 				result: noop,
 				unmount() {
-					ofS1.unmount()
-					ofS2.unmount()
+					ofSL.unmount()
+					ofSR.unmount()
 				},
 			}
 		}

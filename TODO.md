@@ -2,11 +2,9 @@
 
 - push/pull: improve type safety
 
-- tapFold
-
-- fold
-
 - observable
+
+- rethink error typing
 
 - monads
 
@@ -19,10 +17,12 @@
 - operators:
 
   - chain
-  - zipCmp
   - debounce
   - debounceKey
   - throttle
+
+- fold
+  - zipCmp
 
 ## Maybe
 
