@@ -1,4 +1,4 @@
-import { defer } from '../sinks'
+import { deferCond } from '../sinks/utils'
 import { AnyPullPush, Pull, Push, Source } from '../sources'
 
 export function concat<V1, I1, E1, R1>(
@@ -23,14 +23,12 @@ export function concat<V1, I1, E1, R1, P extends AnyPullPush>(
 			let unmount: () => void
 			const ofS1 = s1({
 				complete() {
-					if (unmount) unmount()
-					else
-						defer(() => {
-							unmount()
-						})
-					ofS2 = s2(props)
-					pull = ofS2.pull
-					unmount = ofS2.unmount
+					deferCond(pull, () => {
+						unmount()
+						ofS2 = s2(props)
+						pull = ofS2.pull
+						unmount = ofS2.unmount
+					})
 				},
 				error(e) {
 					props.error(e)

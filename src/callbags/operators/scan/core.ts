@@ -18,7 +18,7 @@ export interface Fold1<Acc, Index, R = Acc> {
 	result?: (acc: Acc) => R
 }
 
-interface ScanProps<Value, Acc, Index, R> {
+export interface ScanProps<Value, Acc, Index, R> {
 	fold: (value: Value, acc: Acc, index: Index) => Acc
 	foldDest?: (value: Acc, acc: Acc, index: Index) => Acc
 	init?: Init<Acc>

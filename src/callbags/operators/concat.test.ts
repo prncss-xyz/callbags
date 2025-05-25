@@ -1,8 +1,7 @@
 import { flow } from '@constellar/core'
 
-import { collect, collectAsync } from '../sinks'
+import { collect, collectAsync, toPush } from '../sinks'
 import { iterable } from '../sources'
-import { toPush } from '../subjects/toPush'
 import { concat } from './concat'
 import { arrayFold, scan } from './scan'
 

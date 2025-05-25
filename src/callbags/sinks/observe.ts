@@ -2,8 +2,9 @@ import { noop, pipe2 } from '@constellar/core'
 
 import { Errable, error, success } from '../errable'
 import { ProObserver, Pull, Push, resolveObserver, Source } from '../sources'
+import { defer } from './utils'
 
-export function observe<Value, Index, Err, R>(
+function observe<Value, Index, Err, R>(
 	source: Source<Value, Index, Err, R, Pull>,
 	observer: ProObserver<Value, Index, Err, R>,
 ) {
@@ -27,33 +28,24 @@ export function observe<Value, Index, Err, R>(
 	while (opened) pull()
 }
 
-export function preCollectSync<Value, Index, Err, R>(
-	source: Source<Value, Index, Err, R, Pull>,
-	onSuccess: (() => void) | ((res: R) => void),
-	onError: (() => void) | ((fail: Err) => void),
-) {
-	let opened = true
-	const { pull, result, unmount } = source({
-		complete() {
-			opened = false
-			unmount()
-			onSuccess(result())
-		},
-		error(err) {
-			opened = false
-			unmount()
-			onError(err)
-		},
-		next: noop,
-	})
-	while (opened) pull()
+export function toPush<Value, Index, Err>(
+	source: Source<Value, Index, Err, void, Pull>,
+): Source<Value, Index, Err, void, Push> {
+	return function ({ complete, error, next }) {
+		observe(source, {
+			error,
+			next,
+		})
+		complete()
+		return {
+			pull: undefined,
+			result: noop,
+			unmount: noop,
+		}
+	}
 }
 
-export function defer(cb: () => void) {
-	setTimeout(cb, 0)
-}
-
-export function preCollectAsync<Value, Index, Err, R>(
+function preCollectAsync<Value, Index, Err, R>(
 	source: Source<Value, Index, Err, R, Push>,
 	onSuccess: (() => void) | ((res: R) => void),
 	onError: (() => void) | ((fail: Err) => void),
@@ -81,15 +73,14 @@ export function collect<Value, Index, R, Err>(
 	source: Source<Value, Index, Err, R, Pull>,
 ): ResType<Err, R> {
 	let result: R | undefined
-	preCollectSync(
-		source,
-		(r) => {
+	observe(source, {
+		complete(r) {
 			result = r
 		},
-		() => {
+		error() {
 			result = undefined
 		},
-	)
+	})
 	return result!
 }
 
