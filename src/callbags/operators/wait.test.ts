@@ -5,7 +5,7 @@ import { describe, expect, test } from 'vitest'
 import { map } from '.'
 import { collectAsync, toPush } from '../sinks'
 import { iterable } from '../sources'
-import { arrayFold, scan } from './scan'
+import { arrayFold } from './scan'
 import { wait } from './wait'
 
 describe('wait', () => {
@@ -17,8 +17,7 @@ describe('wait', () => {
 				return v
 			}),
 			wait(),
-			scan(arrayFold()),
-			collectAsync,
+			collectAsync(arrayFold()),
 		)
 		expect(res).toEqual([0, 2, 9])
 	})

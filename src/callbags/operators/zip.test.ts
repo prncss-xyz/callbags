@@ -2,7 +2,7 @@ import { flow } from '@constellar/core'
 
 import { collect, collectAsync, toPush } from '../sinks'
 import { interval, iterable } from '../sources'
-import { arrayFold, scan } from './scan'
+import { arrayFold } from './scan'
 import { zip } from './zip'
 
 describe('zip', () => {
@@ -10,8 +10,7 @@ describe('zip', () => {
 		const res = flow(
 			iterable([0, 1, 2]),
 			zip(iterable(['a', 'b']), (a, b) => a + b),
-			scan(arrayFold()),
-			collect,
+			collect(arrayFold()),
 		)
 		expect(res).toEqual(['0a', '1b'])
 		expectTypeOf(res).toEqualTypeOf<string[]>()
@@ -20,8 +19,7 @@ describe('zip', () => {
 		const res = flow(
 			iterable([0, 1]),
 			zip(iterable(['a', 'b', 'c']), (a, b) => a + b),
-			scan(arrayFold()),
-			collect,
+			collect(arrayFold()),
 		)
 		expect(res).toEqual(['0a', '1b'])
 		expectTypeOf(res).toEqualTypeOf<string[]>()
@@ -30,8 +28,7 @@ describe('zip', () => {
 		const res = await flow(
 			interval(10),
 			zip(toPush(iterable(['a', 'b'])), (a, b) => a + b),
-			scan(arrayFold()),
-			collectAsync,
+			collectAsync(arrayFold()),
 		)
 		expect(res).toEqual(['0a', '1b'])
 		expectTypeOf(res).toEqualTypeOf<string[]>()
@@ -40,8 +37,7 @@ describe('zip', () => {
 		const res = await flow(
 			toPush(iterable(['a', 'b'])),
 			zip(interval(10), (a, b) => a + b),
-			scan(arrayFold()),
-			collectAsync,
+			collectAsync(arrayFold()),
 		)
 		expect(res).toEqual(['a0', 'b1'])
 		expectTypeOf(res).toEqualTypeOf<string[]>()

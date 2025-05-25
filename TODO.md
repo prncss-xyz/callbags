@@ -1,5 +1,9 @@
 # TODO
 
+- push/pull: improve type safety
+
+- tapFold
+
 - fold
 
 - observable

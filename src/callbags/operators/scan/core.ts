@@ -1,9 +1,10 @@
-import { id } from '@constellar/core'
+import { id, noop } from '@constellar/core'
 import { fromInit, Init } from '@prncss-xyz/utils'
 
 import { AnyPullPush, Observer, Source } from '../../sources'
 
 const emptyError = 'empty'
+export type EmptyError = typeof emptyError
 
 export interface Fold<Value, Acc, Index, R = Acc> {
 	fold: (value: Value, acc: Acc, index: Index) => Acc
@@ -33,6 +34,9 @@ export function toDest<Acc, Index, R>(
 ): Fold1<Acc, Index, R>
 export function toDest<Value, Acc, Index, R>(
 	props: ScanProps<Value, Acc, Index, R>,
+): ScanProps<Value, Acc, Index, R>
+export function toDest<Value, Acc, Index, R>(
+	props: ScanProps<Value, Acc, Index, R>,
 ) {
 	return {
 		fold: props.foldDest ?? props.fold,
@@ -50,7 +54,16 @@ export function scan<Acc, Index>(
 	props: Fold1<Acc, Index, Acc>,
 ): <Err, RS, P extends AnyPullPush>(
 	source: Source<Acc, Index, Err, RS, P>,
-) => Source<Acc, Index, Err | typeof emptyError, Acc, P>
+) => Source<Acc, Index, EmptyError | Err, Acc, P>
+export function scan<Value, Index, Acc, R>(
+	foldProps: ScanProps<Value, Acc, Index, R>,
+): <Err, R, P extends AnyPullPush>(
+	source: Source<Value, Index, Err, R, P>,
+) => (props: Observer<Acc, Index, EmptyError | Err, void>) => {
+	pull: P
+	result(): any
+	unmount(): void
+}
 export function scan<Value, Index, Acc, R>(
 	foldProps: ScanProps<Value, Acc, Index, R>,
 ) {
@@ -93,6 +106,13 @@ export function scan<Value, Index, Acc, R>(
 				},
 			}
 		}
+	}
+}
+
+export function voidFold<Value, Index>(): Fold<Value, void, Index> {
+	return {
+		fold: noop,
+		init: noop,
 	}
 }
 

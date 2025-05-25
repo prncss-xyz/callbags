@@ -3,11 +3,12 @@ import { flow } from '@constellar/core'
 import { tap } from '.'
 import { collect } from '../sinks'
 import { iterable } from '../sources'
+import { voidFold } from './scan'
 
 describe('tap', () => {
 	test('', () => {
 		const cb = vi.fn()
-		const res = flow(iterable([1, 2, 3]), tap(cb), collect)
+		const res = flow(iterable([1, 2, 3]), tap(cb), collect(voidFold()))
 		expect(cb.mock.calls).toEqual([
 			[1, 0],
 			[2, 1],

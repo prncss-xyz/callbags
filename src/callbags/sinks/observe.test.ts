@@ -1,13 +1,13 @@
 import { flow } from '@constellar/core'
 
 import { take } from '../operators'
-import { scan, valueFold } from '../operators/scan'
+import { valueFold } from '../operators/scan'
 import { interval, iterable } from '../sources'
 import { collect, collectAsync } from './observe'
 
 describe('collect', () => {
 	test('collect last number', () => {
-		const res = flow(iterable([1, 2, 3, 4]), scan(valueFold()), collect)
+		const res = flow(iterable([1, 2, 3, 4]), collect(valueFold()))
 		expect(res).toEqual(4)
 		expectTypeOf(res).toEqualTypeOf<number | undefined>()
 	})
@@ -15,12 +15,7 @@ describe('collect', () => {
 
 describe('collectAsync', () => {
 	test('interval', async () => {
-		const res = await flow(
-			interval(1),
-			take(4),
-			scan(valueFold()),
-			collectAsync,
-		)
+		const res = await flow(interval(1), take(4), collectAsync(valueFold()))
 		expect(res).toEqual(3)
 	})
 })
