@@ -25,17 +25,19 @@ function pendingCounter(onDone: () => void) {
 	}
 }
 
-export function wait() {
-	return function <A, Index, Err>(
-		source: Source<Promise<A>, Index, Err, void, Push>,
-	): Source<A, Index, Err, void, Push> {
+export function mapAsync<A, Index, B>(
+	cb: (value: A, index: Index) => Promise<B>,
+) {
+	return function <Err>(
+		source: Source<A, Index, Err, void, Push>,
+	): Source<B, Index, Err, void, Push> {
 		return function (props) {
 			const { complete, wrap } = pendingCounter(props.complete)
 			return source({
 				complete,
 				error: props.error,
 				next(value, index) {
-					wrap(value.then((v) => props.next(v, index)))
+					wrap(cb(value, index).then((v) => props.next(v, index)))
 				},
 			})
 		}
