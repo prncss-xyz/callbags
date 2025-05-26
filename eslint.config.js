@@ -26,6 +26,7 @@ export default tseslint.config({
 			{
 				cspell: {
 					words: [
+            'succ',
 						'callbag',
 						'callbags',
 						'unfoldable',

@@ -3,10 +3,10 @@ import { timed } from '@prncss-xyz/utils'
 import { describe, expect, test } from 'vitest'
 
 import { map } from '.'
-import { collectAsync, toPush } from '../sinks'
+import { toPush, valAsync } from '../sinks'
 import { iterable } from '../sources'
 import { mapAsync } from './mapAsync'
-import { arrayFold } from './scan'
+import { arrayFold, fold } from './scan'
 
 describe('mapAsync', () => {
 	test('', async () => {
@@ -17,7 +17,8 @@ describe('mapAsync', () => {
 				return v
 			}),
 			mapAsync(id),
-			collectAsync(arrayFold()),
+			fold(arrayFold()),
+			valAsync(),
 		)
 		expect(res).toEqual([0, 2, 9])
 	})

@@ -1,5 +1,7 @@
 # TODO
 
+- remove fold suffixes
+
 - push/pull: improve type safety
 
 - rethink error typing

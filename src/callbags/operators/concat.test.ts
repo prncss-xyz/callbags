@@ -1,16 +1,17 @@
 import { flow } from '@constellar/core'
 
-import { collect, collectAsync, toPush } from '../sinks'
+import { toPush, val, valAsync } from '../sinks'
 import { iterable } from '../sources'
 import { concat } from './concat'
-import { arrayFold } from './scan'
+import { arrayFold, fold } from './scan'
 
 describe('concat', () => {
 	test('sync', () => {
 		const res = flow(
 			iterable([0, 1]),
 			concat(iterable(['a', 'b'])),
-			collect(arrayFold()),
+			fold(arrayFold()),
+			val(),
 		)
 		expect(res).toEqual([0, 1, 'a', 'b'])
 		expectTypeOf(res).toEqualTypeOf<(number | string)[]>()
@@ -19,7 +20,8 @@ describe('concat', () => {
 		const res = await flow(
 			toPush(iterable([0, 1])),
 			concat(toPush(iterable(['a', 'b']))),
-			collectAsync(arrayFold()),
+			fold(arrayFold()),
+			valAsync(),
 		)
 		expect(res).toEqual([0, 1, 'a', 'b'])
 		expectTypeOf(res).toEqualTypeOf<(number | string)[]>()

@@ -1,10 +1,10 @@
 import { flow } from '@constellar/core'
 import { mul } from '@prncss-xyz/utils'
 
-import { collect } from '../sinks'
+import { val } from '../sinks'
 import { iterable } from '../sources'
 import { map } from './map'
-import { valueFold } from './scan'
+import { fold, valueFold } from './scan'
 
 describe('map', () => {
 	test('changes type', () => {
@@ -13,7 +13,8 @@ describe('map', () => {
 			map(mul(2)),
 			map(String),
 			map((x, i) => x + i),
-			collect(valueFold()),
+			fold(valueFold()),
+			val(),
 		)
 		expect(res).toEqual('83')
 		expectTypeOf(res).toEqualTypeOf<string | undefined>()

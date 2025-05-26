@@ -1,5 +1,5 @@
 import { id, noop } from '@constellar/core'
-import { fromInit, Init } from '@prncss-xyz/utils'
+import { fromInit, Init, isoAssert, pro } from '@prncss-xyz/utils'
 
 import { AnyPullPush, Observer, Source } from '../../sources'
 
@@ -16,7 +16,6 @@ export interface Fold<Value, Acc, Index, R = Acc> {
 export interface Fold1<Acc, Index, R = Acc> {
 	fold: (value: Acc, acc: Acc, index: Index) => Acc
 	foldDest?: (value: Acc, acc: Acc, index: Index) => Acc
-	head?: true
 	result?: (acc: Acc) => R
 }
 
@@ -95,15 +94,11 @@ export function scan<Value, Index, Acc, R>(
 					},
 					next(value, index) {
 						if (dirty) {
-							if (foldProps.head) {
-								props.complete(result(value as any))
-							} else {
-								acc = fold(value, acc, index)
-								props.next(result(acc), index)
-							}
-							dirty = true
+							acc = fold(value, acc, index)
+							props.next(result(acc), index)
 						} else {
 							acc = value as any
+							dirty = true
 							props.next(result(acc), index)
 						}
 					},
@@ -111,6 +106,56 @@ export function scan<Value, Index, Acc, R>(
 				result() {
 					if (dirty) return result(acc)
 					throw new Error('unexpected codepath')
+				},
+			}
+		}
+	}
+}
+
+export function fold<Value, Index, Acc, R>(
+	props: Fold<Value, Acc, Index, R>,
+): <Err, RS, P extends AnyPullPush>(
+	source: Source<Value, Index, Err, RS, P>,
+) => Source<void, void, Err, R, P>
+export function fold<Acc, Index>(
+	props: Fold1<Acc, Index, Acc>,
+): <Err, RS, P extends AnyPullPush>(
+	source: Source<Acc, Index, Err, RS, P>,
+) => Source<void, void, EmptyError | Err, Acc, P>
+export function fold<Value, Index, Acc, R>(
+	foldProps: ScanProps<Value, Acc, Index, R>,
+) {
+	return scan(toDest(foldProps))
+}
+
+export function head<Value, Index>() {
+	return function <Err, R, P extends AnyPullPush>(
+		source: Source<Value, Index, Err, R, P>,
+	) {
+		return function (
+			props: Observer<Value, Index, Err | typeof emptyError, void>,
+		) {
+			let acc: Value
+			let dirty = false
+			return {
+				...source({
+					...props,
+					complete(res) {
+						if (dirty) {
+							props.complete(res)
+						} else {
+							props.error(emptyError)
+						}
+					},
+					next(value) {
+						acc = value
+						dirty = true
+						props.complete()
+					},
+				}),
+				result() {
+					isoAssert(dirty, 'unexpected codepath')
+					return acc
 				},
 			}
 		}
@@ -127,13 +172,6 @@ export function voidFold<Value, Index>(): Fold<Value, void, Index> {
 export function valueFold<Value, Index>(): Fold1<Value, Index> {
 	return {
 		fold: id,
-	}
-}
-
-export function headFold<Value, Index>(): Fold1<Value, Index> {
-	return {
-		fold: id,
-		head: true,
 	}
 }
 
