@@ -16,12 +16,14 @@ export interface Fold<Value, Acc, Index, R = Acc> {
 export interface Fold1<Acc, Index, R = Acc> {
 	fold: (value: Acc, acc: Acc, index: Index) => Acc
 	foldDest?: (value: Acc, acc: Acc, index: Index) => Acc
+	head?: true
 	result?: (acc: Acc) => R
 }
 
 export interface ScanProps<Value, Acc, Index, R> {
 	fold: (value: Value, acc: Acc, index: Index) => Acc
 	foldDest?: (value: Acc, acc: Acc, index: Index) => Acc
+	head?: true
 	init?: Init<Acc>
 	result?: (acc: Acc) => R
 }
@@ -92,12 +94,18 @@ export function scan<Value, Index, Acc, R>(
 						}
 					},
 					next(value, index) {
-						if (dirty) acc = fold(value, acc, index)
-						else {
+						if (dirty) {
+							if (foldProps.head) {
+								props.complete(result(value as any))
+							} else {
+								acc = fold(value, acc, index)
+								props.next(result(acc), index)
+							}
 							dirty = true
+						} else {
 							acc = value as any
+							props.next(result(acc), index)
 						}
-						props.next(result(acc), index)
 					},
 				}),
 				result() {
@@ -119,6 +127,13 @@ export function voidFold<Value, Index>(): Fold<Value, void, Index> {
 export function valueFold<Value, Index>(): Fold1<Value, Index> {
 	return {
 		fold: id,
+	}
+}
+
+export function headFold<Value, Index>(): Fold1<Value, Index> {
+	return {
+		fold: id,
+		head: true,
 	}
 }
 

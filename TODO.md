@@ -2,8 +2,6 @@
 
 - push/pull: improve type safety
 
-- observable
-
 - rethink error typing
 
 - monads
@@ -20,9 +18,11 @@
   - debounce
   - debounceKey
   - throttle
-
-- fold
   - zipCmp
+
+## Later
+
+- head (optimization)
 
 ## Maybe
 
