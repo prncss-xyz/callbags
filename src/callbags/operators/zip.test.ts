@@ -1,6 +1,6 @@
 import { flow } from '@constellar/core'
 
-import { toPush, val, valAsync } from '../sinks'
+import { toPush, val } from '../sinks'
 import { interval, iterable } from '../sources'
 import { arrayFold, fold } from './scan'
 import { zip } from './zip'
@@ -31,7 +31,7 @@ describe('zip', () => {
 			interval(10),
 			zip(toPush(iterable(['a', 'b'])), (a, b) => a + b),
 			fold(arrayFold()),
-			valAsync(),
+			val(),
 		)
 		expect(res).toEqual(['0a', '1b'])
 		expectTypeOf(res).toEqualTypeOf<string[]>()
@@ -41,7 +41,7 @@ describe('zip', () => {
 			toPush(iterable(['a', 'b'])),
 			zip(interval(10), (a, b) => a + b),
 			fold(arrayFold()),
-			valAsync(),
+			val(),
 		)
 		expect(res).toEqual(['a0', 'b1'])
 		expectTypeOf(res).toEqualTypeOf<string[]>()

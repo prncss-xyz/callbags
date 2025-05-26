@@ -58,39 +58,27 @@ export function toPush<Value, Index, Err>(
 	}
 }
 
-export type ErrType_<Err, EE> = Err extends unknown ? EE : never
+type ErrType<Err, EE> = Err extends unknown ? EE : never
+type CP<P extends AnyPullPush, V> = P extends Pull
+	? V
+	: P extends Push
+		? Promise<V>
+		: never
 
-export function extract<Value, Index, Err, R, ES, EE>(
+function extract<Value, Index, Err, R, ES, EE, P extends AnyPullPush>(
 	onSuccess: (r: R) => ES,
 	onError: (r: Err) => EE,
 ) {
 	return function (
-		source: Source<Value, Index, Err, R, Pull>,
-	): ErrType_<Err, EE> | ES {
-		let result: EE | ES
-		observe({
-			complete(r: R) {
-				result = onSuccess(r)
-			},
-			error(r: Err) {
-				result = onError(r)
-			},
-		})(source)
-		return result!
-	}
-}
-
-export function extractAsync<Value, Index, Err, R, ES, EE>(
-	onSuccess: (r: R) => ES,
-	onError: (r: Err) => EE,
-) {
-	return function (
-		source: Source<Value, Index, Err, R, Push>,
-	): Promise<ErrType_<Err, EE> | ES> {
-		let complete: (value: EE | ES) => void
-		const promise = new Promise<EE | ES>((resolve) => {
-			complete = resolve
-		})
+		source: Source<Value, Index, Err, R, P>,
+	): CP<P, ErrType<Err, EE> | ES> {
+		type ResErr = ErrType<Err, EE> | ES
+		let result: ResErr
+		let dirty = false
+		let complete = (value: ResErr) => {
+			result = value
+			dirty = true
+		}
 		observe({
 			complete(r: R) {
 				complete(onSuccess(r))
@@ -99,22 +87,18 @@ export function extractAsync<Value, Index, Err, R, ES, EE>(
 				complete(onError(r))
 			},
 		})(source)
-		return promise
+		if (dirty) return result! as any
+		const promise = new Promise<ResErr>((resolve) => {
+			complete = resolve
+		})
+		return promise as any
 	}
 }
 
-export function val<Value, Index, Err, R>() {
-	return extract<Value, Index, Err, R, R, undefined>(id, always(undefined))
-}
-export function valAsync<Value, Index, Err, R>() {
-	return extractAsync<Value, Index, Err, R, R, undefined>(id, always(undefined))
+export function val<Value, Index, Err, R, P extends AnyPullPush>() {
+	return extract<Value, Index, Err, R, R, undefined, P>(id, always(undefined))
 }
 
-export function safe<Value, Index, E, R>() {
-	return extract<Value, Index, E, R, Succ<R>, Err<E>>(success, error)
+export function safe<Value, Index, E, R, P extends AnyPullPush>() {
+	return extract<Value, Index, E, R, Succ<R>, Err<E>, P>(success, error)
 }
-export function safeAsync<Value, Index, E, R>() {
-	return extractAsync<Value, Index, E, R, Succ<R>, Err<E>>(success, error)
-}
-
-export type ErrType<Err> = Err extends unknown ? undefined : never

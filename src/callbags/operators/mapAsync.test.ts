@@ -3,7 +3,7 @@ import { timed } from '@prncss-xyz/utils'
 import { describe, expect, test } from 'vitest'
 
 import { map } from '.'
-import { toPush, valAsync } from '../sinks'
+import { toPush, val } from '../sinks'
 import { iterable } from '../sources'
 import { mapAsync } from './mapAsync'
 import { arrayFold, fold } from './scan'
@@ -18,7 +18,7 @@ describe('mapAsync', () => {
 			}),
 			mapAsync(id),
 			fold(arrayFold()),
-			valAsync(),
+			val(),
 		)
 		expect(res).toEqual([0, 2, 9])
 	})
