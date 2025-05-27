@@ -3,14 +3,14 @@ import { flow } from '@constellar/core'
 import { toPush, val } from '../sinks'
 import { iterable } from '../sources'
 import { concat } from './concat'
-import { arrayFold, fold } from './scan'
+import { collect, fold } from './scan'
 
 describe('concat', () => {
 	test('sync', () => {
 		const res = flow(
 			iterable([0, 1]),
 			concat(iterable(['a', 'b'])),
-			fold(arrayFold()),
+			fold(collect()),
 			val(),
 		)
 		expect(res).toEqual([0, 1, 'a', 'b'])
@@ -20,7 +20,7 @@ describe('concat', () => {
 		const res = await flow(
 			toPush(iterable([0, 1])),
 			concat(toPush(iterable(['a', 'b']))),
-			fold(arrayFold()),
+			fold(collect()),
 			val(),
 		)
 		expect(res).toEqual([0, 1, 'a', 'b'])

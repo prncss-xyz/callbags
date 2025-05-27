@@ -1,12 +1,13 @@
 import { Fold } from './core'
 
-export function objFold<T, Index extends PropertyKey>(): Fold<
+export function fromEntries<T, Index extends PropertyKey>(): Fold<
 	T,
 	Record<Index, T>,
 	Index
 > {
 	return {
-		fold: (t, acc, index) => ((acc[index] = t), acc),
+		fold: (t, acc, index) => ({ ...acc, [index]: t }),
+		foldDest: (t, acc, index) => ((acc[index] = t), acc),
 		init: () => ({}) as any,
 	}
 }
@@ -25,14 +26,14 @@ export function productFold<I>(): Fold<number, number, I> {
 	}
 }
 
-export function lengthFold<I>(): Fold<unknown, number, I> {
+export function length<I>(): Fold<unknown, number, I> {
 	return {
 		fold: (_t, acc) => acc + 1,
 		init: 0,
 	}
 }
 
-export function groupByFold<P extends PropertyKey, I, T>(
+export function groupBy<P extends PropertyKey, I, T>(
 	keyFn: (t: T) => P | undefined,
 ): Fold<T, Record<P, T[]>, I> {
 	return {
@@ -48,20 +49,20 @@ export function groupByFold<P extends PropertyKey, I, T>(
 	}
 }
 
-export function partitionFold<T, I>(predicate: (t: T) => unknown) {
-	return groupByFold<'false' | 'true', I, T>((t: T) =>
+export function partition<T, I>(predicate: (t: T) => unknown) {
+	return groupBy<'false' | 'true', I, T>((t: T) =>
 		predicate(t) ? 'true' : 'false',
 	)
 }
 
-export function joinFold<I>(sep = '\t'): Fold<string, string, I> {
+export function join<I>(sep = '\t'): Fold<string, string, I> {
 	return {
 		fold: (t, acc) => (acc === '' ? t : acc + sep + t),
 		init: '',
 	}
 }
 
-export function joinLastFold<I>(sep = '\n'): Fold<string, string, I> {
+export function joinLast<I>(sep = '\n'): Fold<string, string, I> {
 	return {
 		fold: (t, acc) => acc + t + sep,
 		init: '',

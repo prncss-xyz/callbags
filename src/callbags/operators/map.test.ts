@@ -4,7 +4,7 @@ import { mul } from '@prncss-xyz/utils'
 import { val } from '../sinks'
 import { iterable } from '../sources'
 import { map } from './map'
-import { fold, valueFold } from './scan'
+import { fold, last } from './scan'
 
 describe('map', () => {
 	test('changes type', () => {
@@ -13,7 +13,7 @@ describe('map', () => {
 			map(mul(2)),
 			map(String),
 			map((x, i) => x + i),
-			fold(valueFold()),
+			fold(last()),
 			val(),
 		)
 		expect(res).toEqual('83')

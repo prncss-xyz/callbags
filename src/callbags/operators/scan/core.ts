@@ -1,9 +1,9 @@
-import { id, noop } from '@constellar/core'
-import { fromInit, Init, isoAssert, pro } from '@prncss-xyz/utils'
+import { id } from '@constellar/core'
+import { fromInit, Init, isoAssert } from '@prncss-xyz/utils'
 
 import { AnyPullPush, Observer, Source } from '../../sources'
 
-const emptyError = 'empty'
+const emptyError = { type: 'empty' }
 export type EmptyError = typeof emptyError
 
 export interface Fold<Value, Acc, Index, R = Acc> {
@@ -128,7 +128,7 @@ export function fold<Value, Index, Acc, R>(
 	return scan(toDest(foldProps))
 }
 
-export function head<Value, Index>() {
+export function first<Value, Index>() {
 	return function <Err, R, P extends AnyPullPush>(
 		source: Source<Value, Index, Err, R, P>,
 	) {
@@ -162,20 +162,13 @@ export function head<Value, Index>() {
 	}
 }
 
-export function voidFold<Value, Index>(): Fold<Value, void, Index> {
-	return {
-		fold: noop,
-		init: noop,
-	}
-}
-
-export function valueFold<Value, Index>(): Fold1<Value, Index> {
+export function last<Value, Index>(): Fold1<Value, Index> {
 	return {
 		fold: id,
 	}
 }
 
-export function arrayFold<Value, Index>(): Fold<Value, Value[], Index> {
+export function collect<Value, Index>(): Fold<Value, Value[], Index> {
 	return {
 		fold: (t, acc) => [...acc, t],
 		foldDest(t, acc) {

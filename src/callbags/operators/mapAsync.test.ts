@@ -6,7 +6,7 @@ import { map } from '.'
 import { toPush, val } from '../sinks'
 import { iterable } from '../sources'
 import { mapAsync } from './mapAsync'
-import { arrayFold, fold } from './scan'
+import { collect, fold } from './scan'
 
 describe('mapAsync', () => {
 	test('', async () => {
@@ -17,7 +17,7 @@ describe('mapAsync', () => {
 				return v
 			}),
 			mapAsync(id),
-			fold(arrayFold()),
+			fold(collect()),
 			val(),
 		)
 		expect(res).toEqual([0, 2, 9])
