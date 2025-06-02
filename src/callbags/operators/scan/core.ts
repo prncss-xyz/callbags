@@ -1,7 +1,7 @@
 import { id } from '@constellar/core'
 import { fromInit, Init, isoAssert } from '@prncss-xyz/utils'
 
-import { EmptyError } from '../../../errors'
+import { DomainError, EmptyError } from '../../../errors'
 import { AnyPullPush, Observer, Source } from '../../sources/core'
 
 export interface Fold<Value, Acc, Index, R = Acc> {
@@ -47,17 +47,17 @@ export function toDest<Value, Acc, Index, R>(
 
 export function scan<Value, Index, Acc, R>(
 	props: Fold<Value, Acc, Index, R>,
-): <Err, RS, P extends AnyPullPush>(
+): <Err extends DomainError, RS, P extends AnyPullPush>(
 	source: Source<Value, Index, Err, RS, P>,
 ) => Source<Acc, Index, Err, R, P>
 export function scan<Acc, Index>(
 	props: Fold1<Acc, Index, Acc>,
-): <Err, RS, P extends AnyPullPush>(
+): <Err extends DomainError, RS, P extends AnyPullPush>(
 	source: Source<Acc, Index, Err, RS, P>,
 ) => Source<Acc, Index, EmptyError | Err, Acc, P>
 export function scan<Value, Index, Acc, R>(
 	foldProps: ScanProps<Value, Acc, Index, R>,
-): <Err, R, P extends AnyPullPush>(
+): <Err extends DomainError, R, P extends AnyPullPush>(
 	source: Source<Value, Index, Err, R, P>,
 ) => (props: Observer<Acc, Index, EmptyError | Err, void>) => {
 	pull: P
@@ -67,7 +67,7 @@ export function scan<Value, Index, Acc, R>(
 export function scan<Value, Index, Acc, R>(
 	foldProps: ScanProps<Value, Acc, Index, R>,
 ) {
-	return function <Err, R, P extends AnyPullPush>(
+	return function <Err extends DomainError, R, P extends AnyPullPush>(
 		source: Source<Value, Index, Err, R, P>,
 	) {
 		return function (props: Observer<Acc, Index, EmptyError | Err, void>) {
@@ -111,12 +111,12 @@ export function scan<Value, Index, Acc, R>(
 
 export function fold<Value, Index, Acc, R>(
 	props: Fold<Value, Acc, Index, R>,
-): <Err, RS, P extends AnyPullPush>(
+): <Err extends DomainError, RS, P extends AnyPullPush>(
 	source: Source<Value, Index, Err, RS, P>,
 ) => Source<void, void, Err, R, P>
 export function fold<Acc, Index>(
 	props: Fold1<Acc, Index, Acc>,
-): <Err, RS, P extends AnyPullPush>(
+): <Err extends DomainError, RS, P extends AnyPullPush>(
 	source: Source<Acc, Index, Err, RS, P>,
 ) => Source<void, void, EmptyError | Err, Acc, P>
 export function fold<Value, Index, Acc, R>(
@@ -126,7 +126,7 @@ export function fold<Value, Index, Acc, R>(
 }
 
 export function first<Value, Index>() {
-	return function <Err, R, P extends AnyPullPush>(
+	return function <Err extends DomainError, R, P extends AnyPullPush>(
 		source: Source<Value, Index, Err, R, P>,
 	) {
 		return function (props: Observer<Value, Index, EmptyError | Err, void>) {

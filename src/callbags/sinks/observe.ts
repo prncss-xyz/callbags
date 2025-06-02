@@ -1,5 +1,6 @@
 import { noop } from '@constellar/core'
 
+import { DomainError } from '../../errors'
 import {
 	AnyPullPush,
 	ProObserver,
@@ -10,7 +11,7 @@ import {
 } from '../sources/core'
 import { deferCond } from './utils'
 
-export function observe<Value, Index, Err, R>(
+export function observe<Value, Index, Err extends DomainError, R>(
 	observer: ProObserver<Value, Index, Err, R>,
 ) {
 	return function (source: Source<Value, Index, Err, R, AnyPullPush>) {
@@ -39,7 +40,7 @@ export function observe<Value, Index, Err, R>(
 	}
 }
 
-export function toPush<Value, Index, Err>(
+export function toPush<Value, Index, Err extends DomainError>(
 	source: Source<Value, Index, Err, void, Pull>,
 ): Source<Value, Index, Err, void, Push> {
 	return function ({ complete, error, next }) {
@@ -63,7 +64,15 @@ type CP<P extends AnyPullPush, V> = P extends Pull
 		? Promise<V>
 		: never
 
-export function extract<Value, Index, Err, R, ES, EE, P extends AnyPullPush>({
+export function extract<
+	Value,
+	Index,
+	Err extends DomainError,
+	R,
+	ES,
+	EE,
+	P extends AnyPullPush,
+>({
 	onError,
 	onSuccess,
 }: {

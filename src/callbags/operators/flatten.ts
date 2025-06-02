@@ -1,15 +1,16 @@
 import { noop } from '@constellar/core'
 import { thrush } from '@prncss-xyz/utils'
 
+import { DomainError } from '../../errors'
 import { AnyPullPush, Source } from '../sources'
 
 export function flatten<
 	Value,
 	IO,
-	EO,
+	EO extends DomainError,
 	RO,
 	II,
-	EI,
+	EI extends DomainError,
 	RI,
 	P extends AnyPullPush,
 >() {

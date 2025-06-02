@@ -1,9 +1,14 @@
+import { DomainError } from '../../errors'
 import { AnyPullPush, Source } from '../sources'
 
 export function take(n: number) {
-	return function <Value, Index, Err, R, P extends AnyPullPush>(
-		source: Source<Value, Index, Err, R, P>,
-	): Source<Value, Index, Err, R, P> {
+	return function <
+		Value,
+		Index,
+		Err extends DomainError,
+		R,
+		P extends AnyPullPush,
+	>(source: Source<Value, Index, Err, R, P>): Source<Value, Index, Err, R, P> {
 		return function (props) {
 			let count = 0
 			return source({

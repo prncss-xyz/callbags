@@ -1,13 +1,13 @@
-export type Guarded<V> = V extends (x: any) => x is infer T ? T : never
+export type Guarded<V> = V extends (v: any) => v is infer T ? T : never
 
-export function isNullish(x: unknown): x is null | undefined {
-	return x === null || x === undefined
+export function isNullish(v: unknown): v is null | undefined {
+	return v === null || v === undefined
 }
 
-export function isVoid(x: unknown): x is void {
-	return x === undefined
+export function isVoid(v: unknown): v is void {
+	return v === undefined
 }
 
-export function isUnknown(x: unknown): x is unknown {
+export function isUnknown(_v: unknown): _v is unknown {
 	return true
 }

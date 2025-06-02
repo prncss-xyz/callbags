@@ -1,5 +1,6 @@
 import { noop } from '@constellar/core'
 
+import { DomainError } from '../../errors'
 import { AnyPullPush, Source } from '../sources'
 
 function merger<VL, VR, V, IL>(
@@ -52,11 +53,16 @@ function merger<VL, VR, V, IL>(
 	}
 }
 
-export function zip<VR, IR, ER, RR, V, VL, P extends AnyPullPush>(
-	sourceRight: Source<VR, IR, ER, RR, P>,
-	merge: (a: VL, b: VR) => V,
-) {
-	return function <IL, EL, RL>(
+export function zip<
+	VR,
+	IR,
+	ER extends DomainError,
+	RR,
+	V,
+	VL,
+	P extends AnyPullPush,
+>(sourceRight: Source<VR, IR, ER, RR, P>, merge: (a: VL, b: VR) => V) {
+	return function <IL, EL extends DomainError, RL>(
 		sourceLeft: Source<VL, IL, EL, RL, P>,
 	): Source<V, IL, EL | ER, void, P> {
 		return function ({ complete, error, next }) {

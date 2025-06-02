@@ -13,9 +13,9 @@ export type Maybe<S> = Just<S> | Nothing
 
 export class NothingError extends DomainError {}
 
-export function maybe<S, E>() {
+export function maybe<S>() {
 	return {
-		onError(_e: E) {
+		onError(_e: DomainError) {
 			return nothing.void()
 		},
 		onSuccess(s: S) {
@@ -24,7 +24,7 @@ export function maybe<S, E>() {
 		shift(
 			value: Maybe<S>,
 			onSuccess: (s: S) => void,
-			onError: (e: unknown) => void,
+			onError: (e: NothingError) => void,
 		) {
 			if (just.is(value)) onSuccess(just.get(value))
 			else onError(new NothingError())

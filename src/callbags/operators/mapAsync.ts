@@ -1,3 +1,4 @@
+import { DomainError } from '../../errors'
 import { Push, Source } from '../sources'
 
 function pendingCounter(onDone: () => void) {
@@ -28,7 +29,7 @@ function pendingCounter(onDone: () => void) {
 export function mapAsync<A, Index, B>(
 	cb: (value: A, index: Index) => Promise<B>,
 ) {
-	return function <Err>(
+	return function <Err extends DomainError>(
 		source: Source<A, Index, Err, void, Push>,
 	): Source<B, Index, Err, void, Push> {
 		return function (props) {

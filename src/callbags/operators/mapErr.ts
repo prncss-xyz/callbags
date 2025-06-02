@@ -1,6 +1,11 @@
+import { DomainError } from '../../errors'
 import { AnyPullPush, Source } from '../sources'
 
-export function mapErr<Err, B, P extends AnyPullPush>(cb: (value: Err) => B) {
+export function mapErr<
+	Err extends DomainError,
+	B extends DomainError,
+	P extends AnyPullPush,
+>(cb: (value: Err) => B) {
 	return function <A, Index, R>(
 		source: Source<A, Index, Err, R, P>,
 	): Source<A, Index, B, R, P> {

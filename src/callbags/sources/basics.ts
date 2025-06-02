@@ -1,6 +1,7 @@
 import { noop } from '@constellar/core'
 import { fromInit, Init } from '@prncss-xyz/utils'
 
+import { DomainError } from '../../errors'
 import { AnyPullPush, Pull, Push, Source } from './core'
 
 export function empty<Value, Index = void>(): Source<
@@ -123,7 +124,13 @@ export function isPromise<T = unknown>(
 
 type NonFunction<T> = T extends (...args: any[]) => any ? never : T
 type Function<T> = T extends (...args: any[]) => never ? any : T
-export type ProSource<Value, Index, Err, R, P extends AnyPullPush> =
+export type ProSource<
+	Value,
+	Index,
+	Err extends DomainError,
+	R,
+	P extends AnyPullPush,
+> =
 	| AsyncIterable<Value>
 	| Iterable<Value>
 	| NonFunction<Value>
@@ -139,15 +146,23 @@ export function toSource<Value>(
 export function toSource<Value>(
 	proSource: Promise<Value>,
 ): Source<Value, number, never, void, Push>
-export function toSource<Value, Index, Err, R, P extends AnyPullPush>(
-	proSource: Source<Value, Index, Err, R, P>,
-): Source<Value, Index, Err, R, P>
+export function toSource<
+	Value,
+	Index,
+	Err extends DomainError,
+	R,
+	P extends AnyPullPush,
+>(proSource: Source<Value, Index, Err, R, P>): Source<Value, Index, Err, R, P>
 export function toSource<Value>(
 	proSource: NonFunction<Value>,
 ): Source<Value, void, never, void, Pull>
-export function toSource<Value, Index, Err, R, P extends AnyPullPush>(
-	proSource: ProSource<Value, Index, Err, R, P>,
-) {
+export function toSource<
+	Value,
+	Index,
+	Err extends DomainError,
+	R,
+	P extends AnyPullPush,
+>(proSource: ProSource<Value, Index, Err, R, P>) {
 	if (isFunction(proSource)) return proSource
 	if (isAsyncIterable(proSource)) return asyncIterable(proSource)
 	if (isIterable(proSource)) return iterable(proSource)

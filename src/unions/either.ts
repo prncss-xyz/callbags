@@ -1,3 +1,4 @@
+import { DomainError } from '../errors'
 import { Guarded, isUnknown } from '../guards'
 import { union } from './unions'
 
@@ -7,10 +8,10 @@ export const [isEither, { error, success }] = union(EITHER, {
 	success: isUnknown,
 })
 export type Success<S> = Guarded<typeof success.is<S>>
-export type Err<E> = Guarded<typeof error.is<E>>
-export type Either<S, E> = Err<E> | Success<S>
+export type Err<E extends DomainError> = Guarded<typeof error.is<E>>
+export type Either<S, E extends DomainError> = Err<E> | Success<S>
 
-export function either<S, E>() {
+export function either<S, E extends DomainError>() {
 	return {
 		onError(e: E) {
 			return error.of(e)
