@@ -1,10 +1,8 @@
 import { id } from '@constellar/core'
 import { fromInit, Init, isoAssert } from '@prncss-xyz/utils'
 
-import { AnyPullPush, Observer, Source } from '../../sources'
-
-const emptyError = { type: 'empty' }
-export type EmptyError = typeof emptyError
+import { EmptyError } from '../../../errors'
+import { AnyPullPush, Observer, Source } from '../../sources/core'
 
 export interface Fold<Value, Acc, Index, R = Acc> {
 	fold: (value: Value, acc: Acc, index: Index) => Acc
@@ -39,11 +37,12 @@ export function toDest<Value, Acc, Index, R>(
 export function toDest<Value, Acc, Index, R>(
 	props: ScanProps<Value, Acc, Index, R>,
 ) {
-	return {
+	const res: any = {
 		fold: props.foldDest ?? props.fold,
-		init: props.init,
 		result: props.result,
 	}
+	if ('init' in props) res.init = props.init
+	return res
 }
 
 export function scan<Value, Index, Acc, R>(
@@ -71,9 +70,7 @@ export function scan<Value, Index, Acc, R>(
 	return function <Err, R, P extends AnyPullPush>(
 		source: Source<Value, Index, Err, R, P>,
 	) {
-		return function (
-			props: Observer<Acc, Index, Err | typeof emptyError, void>,
-		) {
+		return function (props: Observer<Acc, Index, EmptyError | Err, void>) {
 			const fold = foldProps.fold
 			const result = foldProps.result ?? id<any>
 			let acc: Acc
@@ -89,7 +86,7 @@ export function scan<Value, Index, Acc, R>(
 						if (dirty) {
 							props.complete(res)
 						} else {
-							props.error(emptyError)
+							props.error(new EmptyError())
 						}
 					},
 					next(value, index) {
@@ -104,8 +101,8 @@ export function scan<Value, Index, Acc, R>(
 					},
 				}),
 				result() {
-					if (dirty) return result(acc)
-					throw new Error('unexpected codepath')
+					isoAssert(dirty, 'unexpected codepath')
+					return result(acc)
 				},
 			}
 		}
@@ -132,9 +129,7 @@ export function first<Value, Index>() {
 	return function <Err, R, P extends AnyPullPush>(
 		source: Source<Value, Index, Err, R, P>,
 	) {
-		return function (
-			props: Observer<Value, Index, Err | typeof emptyError, void>,
-		) {
+		return function (props: Observer<Value, Index, EmptyError | Err, void>) {
 			let acc: Value
 			let dirty = false
 			return {
@@ -144,7 +139,7 @@ export function first<Value, Index>() {
 						if (dirty) {
 							props.complete(res)
 						} else {
-							props.error(emptyError)
+							props.error(new EmptyError())
 						}
 					},
 					next(value) {

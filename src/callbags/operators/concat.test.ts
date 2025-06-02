@@ -1,9 +1,10 @@
 import { flow } from '@constellar/core'
 
-import { toPush, val } from '../sinks'
-import { iterable } from '../sources'
+import { value } from '../../unions/value'
+import { extract, toPush } from '../sinks/observe'
+import { iterable } from '../sources/basics'
 import { concat } from './concat'
-import { collect, fold } from './scan'
+import { collect, fold } from './scan/core'
 
 describe('concat', () => {
 	test('sync', () => {
@@ -11,7 +12,7 @@ describe('concat', () => {
 			iterable([0, 1]),
 			concat(iterable(['a', 'b'])),
 			fold(collect()),
-			val(),
+			extract(value()),
 		)
 		expect(res).toEqual([0, 1, 'a', 'b'])
 		expectTypeOf(res).toEqualTypeOf<(number | string)[]>()
@@ -21,7 +22,7 @@ describe('concat', () => {
 			toPush(iterable([0, 1])),
 			concat(toPush(iterable(['a', 'b']))),
 			fold(collect()),
-			val(),
+			extract(value()),
 		)
 		expect(res).toEqual([0, 1, 'a', 'b'])
 		expectTypeOf(res).toEqualTypeOf<(number | string)[]>()

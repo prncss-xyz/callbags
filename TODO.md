@@ -1,10 +1,9 @@
 # TODO
 
-- monads
-
-  - opt
-  - maybe
-  - error
+- why do we need a result()? can we just use complete?
+- type errors 
+- recover
+- complete vs result
 
 - pick/multi
 

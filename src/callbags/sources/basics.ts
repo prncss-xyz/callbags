@@ -130,7 +130,6 @@ export type ProSource<Value, Index, Err, R, P extends AnyPullPush> =
 	| Promise<Value>
 	| Source<Value, Index, Err, R, P>
 
-
 export function toSource<Value>(
 	proSource: AsyncIterable<Value>,
 ): Source<Value, void, never, void, Push>

@@ -1,8 +1,5 @@
-import { Guarded } from './guards'
-
-type Prettify<T> = {
-	[K in keyof T]: T[K]
-} & {}
+import { Guarded } from '../guards'
+import { Prettify } from '../types'
 
 type Tagged<Type, Value> = { readonly type: Type; readonly value: Value }
 type AnyTagged = Tagged<unknown, unknown>

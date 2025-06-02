@@ -1,7 +1,5 @@
-import { id, noop } from '@constellar/core'
-import { always } from '@prncss-xyz/utils'
+import { noop } from '@constellar/core'
 
-import { Err, error, Succ, success } from '../errable'
 import {
 	AnyPullPush,
 	ProObserver,
@@ -9,7 +7,7 @@ import {
 	Push,
 	resolveObserver,
 	Source,
-} from '../sources'
+} from '../sources/core'
 import { deferCond } from './utils'
 
 export function observe<Value, Index, Err, R>(
@@ -65,10 +63,13 @@ type CP<P extends AnyPullPush, V> = P extends Pull
 		? Promise<V>
 		: never
 
-function extract<Value, Index, Err, R, ES, EE, P extends AnyPullPush>(
-	onSuccess: (r: R) => ES,
-	onError: (r: Err) => EE,
-) {
+export function extract<Value, Index, Err, R, ES, EE, P extends AnyPullPush>({
+	onError,
+	onSuccess,
+}: {
+	onError: (r: Err) => EE
+	onSuccess: (r: R) => ES
+}) {
 	return function (
 		source: Source<Value, Index, Err, R, P>,
 	): CP<P, ErrType<Err, EE> | ES> {
@@ -93,12 +94,4 @@ function extract<Value, Index, Err, R, ES, EE, P extends AnyPullPush>(
 		})
 		return promise as any
 	}
-}
-
-export function val<Value, Index, Err, R, P extends AnyPullPush>() {
-	return extract<Value, Index, Err, R, R, undefined, P>(id, always(undefined))
-}
-
-export function safe<Value, Index, E, R, P extends AnyPullPush>() {
-	return extract<Value, Index, E, R, Succ<R>, Err<E>, P>(success, error)
 }

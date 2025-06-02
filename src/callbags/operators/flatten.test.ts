@@ -1,10 +1,11 @@
 import { flow } from '@constellar/core'
 import { describe, expect, test } from 'vitest'
 
-import { flatten } from '../operators'
-import { collect, fold } from '../operators/scan'
-import { val } from '../sinks'
-import { iterable } from '../sources'
+import { value } from '../../unions/value'
+import { extract } from '../sinks/observe'
+import { iterable } from '../sources/basics'
+import { flatten } from './flatten'
+import { collect, fold } from './scan/core'
 
 describe('flatten', () => {
 	test('collect last number', async () => {
@@ -12,7 +13,7 @@ describe('flatten', () => {
 			iterable([iterable([0, 1]), iterable([2, 3])]),
 			flatten(),
 			fold(collect()),
-			val(),
+			extract(value()),
 		)
 		expect(res).toEqual([0, 1, 2, 3])
 	})

@@ -1,10 +1,11 @@
 import { flow } from '@constellar/core'
 import { mul } from '@prncss-xyz/utils'
 
-import { val } from '../sinks'
-import { iterable } from '../sources'
+import { just, maybe } from '../../unions/maybe'
+import { extract } from '../sinks/observe'
+import { iterable } from '../sources/basics'
 import { map } from './map'
-import { fold, last } from './scan'
+import { fold, last } from './scan/core'
 
 describe('map', () => {
 	test('changes type', () => {
@@ -14,9 +15,8 @@ describe('map', () => {
 			map(String),
 			map((x, i) => x + i),
 			fold(last()),
-			val(),
+			extract(maybe()),
 		)
-		expect(res).toEqual('83')
-		expectTypeOf(res).toEqualTypeOf<string | undefined>()
+		expect(res).toEqual(just.of('83'))
 	})
 })
